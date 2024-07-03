@@ -8,9 +8,9 @@ class Feedback(models.Model):
     news_id = models.ForeignKey(ClassifyNews, on_delete=models.CASCADE)
     score = models.IntegerField()
     content = models.CharField(max_length=500)
-    create_at = models.DateField(auto_now_add=True)
-    update_at = models.DateField(auto_now=True)
-    delete_at = models.DateField(null=True)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+    deleted_at = models.DateField(null=True)
 
 
 
