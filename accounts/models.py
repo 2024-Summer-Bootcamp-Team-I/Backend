@@ -8,4 +8,4 @@ class User(models.Model):
     name = models.CharField(max_length=10)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
-    is_deleted = models.DateField(null=True)
+    is_deleted = models.BooleanField(default=False)
