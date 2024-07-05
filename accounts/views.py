@@ -22,7 +22,7 @@ class SignupAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
-    @swagger_auto_schema(operation_summary="로그인", request_body=LoginSerializer, responses={"201":LoginResponseSerializer})
+    @swagger_auto_schema(operation_summary="로그인", request_body=LoginSerializer, responses={"200":LoginResponseSerializer})
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
