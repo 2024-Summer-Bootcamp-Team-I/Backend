@@ -6,7 +6,7 @@ from .models import Channel
 from .serializers import Channel_Serializer, correctrespones_Serializer
 
 class save_channel_APIView(APIView):
-    @swagger_auto_schema(operation_summary="언론사 저장", request_body=Channel_Serializer, responses={"201":correctrespones_Serializer})
+    @swagger_auto_schema(operation_summary="언론사 저장", request_body=Channel_Serializer, responses={201:correctrespones_Serializer, 404:"입력정보 오류"})
     def post(self, request):
         serializer = Channel_Serializer(data=request.data)
         if serializer.is_valid():
@@ -23,7 +23,7 @@ class channel_score_list_all_APIView(APIView):
        
     
 class channel_score_APIView(APIView):
-    @swagger_auto_schema(operation_summary="언론사 점수 개별조회",responses={"200":correctrespones_Serializer})
+    @swagger_auto_schema(operation_summary="언론사 점수 개별조회",responses={200:correctrespones_Serializer})
     def get(self, request, pk):
         try:
             channel = Channel.objects.get(pk=pk)
