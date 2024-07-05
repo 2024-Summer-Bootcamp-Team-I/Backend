@@ -13,9 +13,9 @@ class SignupAPIView(APIView):
         print(__name__)
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user_name = serializer.validated_data.get('user_name')
+            email = serializer.validated_data.get('email')
 
-            if User.objects.filter(user_name=user_name).exists():
+            if User.objects.filter(email=email).exists():
                 return Response({"이미 존재하는 회원입니다."}, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response({"회원가입이 완료되었습니다."}, status=status.HTTP_201_CREATED)
@@ -26,10 +26,10 @@ class LoginAPIView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            user_name = serializer.validated_data.get('user_name')
+            email = serializer.validated_data.get('email')
             password = serializer.validated_data.get('password')
-            if User.objects.filter(user_name=user_name, password=password).exists():
-                user = User.objects.get(user_name=user_name)
+            if User.objects.filter(email=email, password=password).exists():
+                user = User.objects.get(email=email)
                 return Response({'message': '로그인 되었습니다.'}, status=status.HTTP_200_OK)
             return Response({'message': '아이디 또는 비밀번호가 잘못되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

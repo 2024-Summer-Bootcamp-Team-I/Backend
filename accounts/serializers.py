@@ -4,13 +4,13 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['user_name', 'password','nickname','name']
+        fields = ['email', 'password','nickname','name']
 
 
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['user_name','password']
+        fields = ['email','password']
 
 class LoginResponseSerializer(serializers.Serializer):
     message = serializers.CharField()
