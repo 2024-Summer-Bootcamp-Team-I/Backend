@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=10)),
                 ('create_at', models.DateField(auto_now_add=True)),
                 ('update_at', models.DateField(auto_now=True)),
-                ('delete_at', models.DateField(null=True)),
+                ('delete_at', models.BooleanField(default=False)),
             ],
         ),
         migrations.DeleteModel(

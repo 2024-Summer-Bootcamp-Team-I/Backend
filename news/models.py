@@ -8,6 +8,6 @@ class News(models.Model):
     content = models.TextField()
     category = models.CharField(max_length=20)
     published_date = models.DateField()
-    is_deleted = models.BooleanField(null=True)
+    is_deleted = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)

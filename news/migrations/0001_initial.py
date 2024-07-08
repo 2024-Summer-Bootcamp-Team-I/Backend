@@ -18,11 +18,11 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(max_length=50)),
                 ('content', models.TextField()),
                 ('category', models.CharField(max_length=20)),
-                ('channel', models.CharField(max_length=40)),
+                ('channel_id', models.CharField(max_length=40)),
                 ('published_date', models.DateField()),
                 ('created_at', models.DateField(auto_now_add=True)),
                 ('updated_at', models.DateField(auto_now=True)),
-                ('is_deleted', models.DateField(null=True)),
+                ('is_deleted', models.BooleanField(null=True)),
             ],
         ),
     ]

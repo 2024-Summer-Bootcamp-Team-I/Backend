@@ -1,3 +1,4 @@
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -44,3 +45,4 @@ class channel_score_APIView(APIView):
         )
 
         return Response({"message": "언론사 점수조회.", "score": avg_score}, status=status.HTTP_201_CREATED)
+

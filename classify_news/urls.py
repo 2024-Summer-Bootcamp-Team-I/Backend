@@ -5,3 +5,4 @@ urlpatterns = [
     path("", ClassifiesAPIView.as_view()),
     path("<int:news_id>", ClassifyAPIView.as_view()),
 ]
+

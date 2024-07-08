@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Feedback
 from accounts.models import User
+from .models import Feedback
 from classify_news.models import ClassifyNews
 from .serializers import UserIdParameterSerializer
 from .serializers import FeedbackSerializer, FeedbackCreateSerializer
@@ -43,5 +44,4 @@ class FeedbacksAPIView(APIView):
             feedback.save()
             return Response({"message":"피드백이 생성되었습니다."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+    
