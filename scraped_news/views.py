@@ -7,7 +7,8 @@ from rest_framework.response import Response
 from .serializers import UserIdParameterSerializer, ScrapedNewsSerializer, ScrapedNewsCreateSerializer
 from .models import ScrapedNews
 from accounts.models import User
-from news.models import News
+from .models import ScrapedNews
+from classify_news.models import ClassifyNews
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -21,7 +22,7 @@ class ScrapsAPIView(APIView):
     def get(self, request):
         user_id = request.query_params.get('user_id')
         user = get_object_or_404(User, pk = user_id)
-        scraps = ScrapedNews.objects.filter(user_id = user)
+        scraps = ScrapedNews.objects.filter(user_id = user, is_deleted = False)
         serializer = ScrapedNewsSerializer(scraps, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @swagger_auto_schema(
@@ -33,6 +34,14 @@ class ScrapsAPIView(APIView):
     def post(self, request):
         user_id = request.query_params.get('user_id')
         user = get_object_or_404(User, pk = user_id)
+        news_id = request.data.get('news_id')
+        if not ClassifyNews.objects.filter(pk=news_id).exists():
+            return Response({"detail": "news_id가 유효하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        scraped_news = ScrapedNews.objects.filter(news_id = news_id, is_deleted = True).first()
+        if scraped_news:
+            scraped_news.is_deleted = False
+            scraped_news.save()
+            return Response({"message":"기사를 스크랩했습니다"}, status=status.HTTP_201_CREATED)
         serializer = ScrapedNewsCreateSerializer(data = request.data)
         if serializer.is_valid():
             serializer.save(user_id = user)
