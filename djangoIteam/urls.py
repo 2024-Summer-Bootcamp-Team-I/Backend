@@ -17,10 +17,10 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/accounts/",include('accounts.urls')),
-    path("api/v1/classify/<int:news_id>/feedback/", include('feedbacks.urls')),
     path("api/v1/channels/", include('channels.urls')),
     path('api/v1/classify_news', include('classify_news.urls')),
-    path('api/v1/news', include('news.urls')),                              
+    path('api/v1/news', include('news.urls')), 
+    path("api/v1/classifies/<int:news_id>/feedbacks/", include('feedbacks.urls')),                             
 ]
 
 urlpatterns += [

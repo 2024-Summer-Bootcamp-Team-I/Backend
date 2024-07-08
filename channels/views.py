@@ -38,9 +38,9 @@ class channel_score_APIView(APIView):
             return Response({"message": "평균 점수를 계산할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
         
         # ChannelScore 저장 또는 업데이트
-        channel_score, created = ChannelScore.objects.create(
+        ChannelScore.objects.create(
             channel=channel, 
-            defaults={'score': avg_score}
+            score = avg_score
         )
 
         return Response({"message": "언론사 점수조회.", "score": avg_score}, status=status.HTTP_201_CREATED)
