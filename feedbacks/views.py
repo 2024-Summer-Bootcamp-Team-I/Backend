@@ -13,7 +13,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 class FeedbacksAPIView(APIView):
     @swagger_auto_schema(
-        operation_description="특정 뉴스의 피드백 조회",
+        operation_summary="특정 뉴스의 피드백 조회",
         responses={200: FeedbackSerializer(many=True)},
     )
     def get(self, request, news_id):
@@ -23,7 +23,7 @@ class FeedbacksAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     @swagger_auto_schema(
-        operation_description="특정 뉴스의 피드백 생성",
+        operation_summary="특정 뉴스의 피드백 생성",
         request_body=FeedbackCreateSerializer,
         query_serializer=UserIdParameterSerializer,
         responses={201: FeedbackCreateSerializer()},
