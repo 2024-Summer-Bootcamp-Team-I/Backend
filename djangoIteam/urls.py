@@ -19,6 +19,7 @@ urlpatterns = [
     path("api/v1/accounts/",include('accounts.urls')),
     path("api/v1/classifies/<int:news_id>/feedbacks/", include('feedbacks.urls')),
     path("api/v1/classifies/", include('classify_news.urls')),
+
 ]
 
 urlpatterns += [
