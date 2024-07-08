@@ -42,6 +42,6 @@ class FeedbacksAPIView(APIView):
         if serializer.is_valid():
             feedback = serializer.save(news_id=classify_news, user_id=user)
             feedback.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({"message":"피드백이 생성되었습니다."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
