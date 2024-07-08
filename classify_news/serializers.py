@@ -6,7 +6,7 @@ class ClassifyNewsSerializer(serializers.ModelSerializer):
     news = news_data_Serializer(source='news_id', read_only=True)
     class Meta:
         model = ClassifyNews
-        fields = ("news", "score", "reason", "created_at","updated_at","deleted_at")
+        fields = ("news", "score", "reason", "created_at","updated_at","is_deleted")
 
 class ClassifyNewsCreateSerializer(serializers.ModelSerializer):
     class Meta:

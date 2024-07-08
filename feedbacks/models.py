@@ -10,7 +10,7 @@ class Feedback(models.Model):
     content = models.CharField(max_length=500)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
-    deleted_at = models.DateField(null=True)
+    is_deleted = models.BooleanField(null=True)
 
 
 
