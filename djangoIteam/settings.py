@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'classify_news',
     'news',
     'feedbacks',
-    'channels'
+    'channels',
+    'django_apscheduler',
 
 ]
 
