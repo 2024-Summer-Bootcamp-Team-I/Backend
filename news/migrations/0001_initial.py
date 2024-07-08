@@ -14,15 +14,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='News',
             fields=[
-                ('news_id', models.AutoField(primary_key=True, serialize=False)),
+                ('news_id', models.AutoField(primary_key=True)),
                 ('title', models.CharField(max_length=50)),
                 ('content', models.TextField()),
                 ('category', models.CharField(max_length=20)),
                 ('channel', models.CharField(max_length=40)),
                 ('published_date', models.DateField()),
-                ('create_at', models.DateField(auto_now_add=True)),
-                ('update_at', models.DateField(auto_now=True)),
-                ('delete_at', models.DateField(null=True)),
+                ('created_at', models.DateField(auto_now_add=True)),
+                ('updated_at', models.DateField(auto_now=True)),
+                ('is_deleted', models.DateField(null=True)),
             ],
         ),
     ]

@@ -15,8 +15,8 @@ class Migration(migrations.Migration):
             name='Channel',
             fields=[
                 ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=10)),
-                ('score', models.IntegerField()),
+                ('name', models.CharField()),
+                ('logo', models.CharField()),
                 ('is_deleted', models.BooleanField(null=True)),
                 ('created_at', models.DateField(auto_now_add=True)),
                 ('updated_at', models.DateField(auto_now=True)),
