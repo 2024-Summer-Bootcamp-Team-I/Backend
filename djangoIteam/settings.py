@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'classify_news',
     'news',
     'feedbacks',
+    'channels'
 ]
 
 MIDDLEWARE = [
