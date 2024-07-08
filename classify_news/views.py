@@ -19,7 +19,6 @@ class ClassifiesAPIView(APIView):
         classifies = ClassifyNews.objects.all()
         serializer = ClassifyNewsSerializer(classifies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
     @swagger_auto_schema(
         operation_summary="뉴스 판별",
         request_body=ClassifyNewsCreateSerializer,
@@ -54,3 +53,4 @@ class ClassifyAPIView(APIView):
             serializer.save()
             return Response({"message":"기사 판별이 업데이트 되었습니다."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

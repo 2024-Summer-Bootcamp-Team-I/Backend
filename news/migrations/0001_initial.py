@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='News',
             fields=[
-                ('news_id', models.AutoField(primary_key=True, serialize=False)),
+                ('news_id', models.AutoField(primary_key=True)),
                 ('title', models.CharField(max_length=50)),
                 ('content', models.TextField()),
                 ('category', models.CharField(max_length=20)),

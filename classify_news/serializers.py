@@ -12,3 +12,4 @@ class ClassifyNewsCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClassifyNews
         fields = ("news_id","score", "reason")
+

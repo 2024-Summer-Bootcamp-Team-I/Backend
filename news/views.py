@@ -14,12 +14,13 @@ class news_APIView(APIView):
             serializer.save()
             return Response({"message": "뉴스기사가 저장되었습니다."}, status = status.HTTP_201_CREATED)
         return Response({"message": "입력값이 잘못되었습니다."}, status = status.HTTP_400_BAD_REQUEST)
-    
+
+    @swagger_auto_schema(operation_summary="뉴스기사 전체조회", responses= {200:"조회완료"})
     def get(self, request):
         news_list = News.objects.all()
         serializer = news_data_Serializer(news_list, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
-    
+
 class news_list_APIView(APIView):
     @swagger_auto_schema(operation_summary="뉴스기사 개별조회",responses={200:correctrespones_Serializer, 404:"Not Found"})
     def get(self, request, pk):
@@ -27,6 +28,5 @@ class news_list_APIView(APIView):
             news = News.objects.get(pk=pk)
         except News.DoesNotExist:
             return Response({"message": "해당 기사를 찾을 수 없습니다."}, status = status.HTTP_404_NOT_FOUND)
-        
         serializer = news_data_Serializer(news)
         return Response(serializer.data, status = status.HTTP_200_OK)
