@@ -6,5 +6,3 @@ class news_data_Serializer(serializers.ModelSerializer):
         model = News
         fields = '__all__'
 
-class correctrespones_Serializer(serializers.Serializer):
-    message = serializers.CharField()
