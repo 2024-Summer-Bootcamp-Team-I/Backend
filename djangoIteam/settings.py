@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'news',
     'feedbacks',
     'channels',
-    'scraped_news'
+    'scraped_news',
     'django_apscheduler',
 
 ]
@@ -81,8 +81,8 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
-        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': os.environ.get('POSTGRES_PORT'),
     }
 }
 
