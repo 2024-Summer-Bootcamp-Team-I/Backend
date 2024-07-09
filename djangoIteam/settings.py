@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'feedbacks',
     'channels',
     'scraped_news'
+    'django_apscheduler',
+
 ]
 
 MIDDLEWARE = [

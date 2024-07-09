@@ -1,12 +1,13 @@
-
+import logging
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from .models import Channel, ChannelScore
-from classify_news.models import ClassifyNews, News
-from .serializers import Channel_Serializer, CorrectResponse_Serializer
-from django.db.models import Avg
+from classify_news.models import ClassifyNews
+from .serializers import Channel_Serializer, CorrectResponse_Serializer, ChannelsScoreSerializer, ChannelScoreSerializer
+from django.db.models import Avg, Max
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class save_channel_APIView(APIView):
     @swagger_auto_schema(operation_summary="언론사 저장", 
@@ -22,9 +23,10 @@ class save_channel_APIView(APIView):
             serializer.save()
             return Response({"message": "언론사가 저장되었습니다."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
-class channel_score_APIView(APIView):
-    @swagger_auto_schema(operation_summary="언론사 점수조회",
+class channel_score_save_APIView(APIView):
+    @swagger_auto_schema(operation_summary="언론사 점수저장",
                          responses={201:CorrectResponse_Serializer, 404:"입력정보 오류"})
     def post(self, request, id):
         try:
@@ -32,17 +34,62 @@ class channel_score_APIView(APIView):
         except Channel.DoesNotExist:
             return Response({"message": "채널이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
         
-        # 특정 Channel과 관련된 News들의 ClassifyNews 점수 평균 계산
         avg_score = ClassifyNews.objects.filter(news_id__channel_id=channel.id).aggregate(average_score=Avg('score'))['average_score']
         
         if avg_score is None:
             return Response({"message": "평균 점수를 계산할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # ChannelScore 저장 또는 업데이트
         ChannelScore.objects.create(
             channel=channel, 
             score = avg_score
         )
+        return Response({"message": "언론사 점수저장.", "score": avg_score}, status=status.HTTP_201_CREATED)
+    
+class channel_score_all_APIView(APIView):
+    @swagger_auto_schema(operation_summary="언론사 점수전체 조회",
+                         responses={201:CorrectResponse_Serializer(many=True), 404:"가져오기 실패"})
+    def get(self, request):
+        recent_channel_scores = ChannelScore.objects.filter(
+            id__in = ChannelScore.objects.values('channel').annotate(latest_id=Max('id')).values('latest_id')).order_by('channel_id')
 
-        return Response({"message": "언론사 점수조회.", "score": avg_score}, status=status.HTTP_201_CREATED)
+        if not recent_channel_scores.exists():
+            return Response({"message": "점수를 가져올 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # ChannelScore 객체들을 시리얼라이즈합니다.
+        serializer = ChannelsScoreSerializer(recent_channel_scores, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+class channel_score_APIView(APIView):
+    @swagger_auto_schema(operation_summary="언론사 1개 시간대별 조회",
+                         responses={201:CorrectResponse_Serializer(many=True), 404: "가져오기 실패"}
+                         )
+    def get(self, request, channel_id):
+        recent_channel_score = ChannelScore.objects.filter(channel_id=channel_id).all()
+
+        if not recent_channel_score.exists():
+            return Response({"message": "점수를 가져올 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ChannelScoreSerializer(recent_channel_score, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def save_channel_scores():
+    logger.info("주기적 작업 시작")
+    channels = Channel.objects.all()
+    for channel in channels:
+        avg_score = ClassifyNews.objects.filter(news_id__channel_id=channel.id).aggregate(average_score=Avg('score'))['average_score']
+        if avg_score is not None:
+            ChannelScore.objects.create(
+                channel=channel, 
+                score=avg_score
+            )
+            logger.info(f"채널 {channel.id}의 점수 {avg_score} 저장됨")
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(save_channel_scores, 'interval', hours=1) 
+scheduler.start()
+logger.info("스케줄러 시작됨")
