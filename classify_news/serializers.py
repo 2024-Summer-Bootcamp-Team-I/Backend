@@ -13,3 +13,8 @@ class ClassifyNewsCreateSerializer(serializers.ModelSerializer):
         model = ClassifyNews
         fields = ("news_id","score", "reason")
 
+class ClassifyNewsUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassifyNews
+        fields = ("score", "reason")
+

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from .models import ClassifyNews
 from news.models import News
-from .serializers import ClassifyNewsSerializer, ClassifyNewsCreateSerializer
+from .serializers import ClassifyNewsSerializer, ClassifyNewsCreateSerializer, ClassifyNewsUpdateSerializer
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -43,12 +43,12 @@ class ClassifyAPIView(APIView):
 
     @swagger_auto_schema(
         operation_summary="뉴스 재판별",
-        request_body=ClassifyNewsCreateSerializer,
-        responses={201: ClassifyNewsCreateSerializer()},
+        request_body=ClassifyNewsUpdateSerializer,
+        responses={201: ClassifyNewsUpdateSerializer()},
     )
     def put(self, request, news_id):
         classify = get_object_or_404(ClassifyNews, news_id = news_id)
-        serializer = ClassifyNewsCreateSerializer(classify,data=request.data, partial = True)
+        serializer = ClassifyNewsUpdateSerializer(classify,data=request.data, partial = True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message":"기사 판별이 업데이트 되었습니다."}, status=status.HTTP_200_OK)
