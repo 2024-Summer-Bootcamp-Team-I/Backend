@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from .models import News
 from .serializers import news_data_Serializer, correctrespones_Serializer
-
+from .crowling import crawl_all_news, crawl_news
 
 class news_APIView(APIView):
     @swagger_auto_schema(operation_summary="뉴스기사 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
@@ -30,3 +30,31 @@ class news_list_APIView(APIView):
             return Response({"message": "해당 기사를 찾을 수 없습니다."}, status = status.HTTP_404_NOT_FOUND)
         serializer = news_data_Serializer(news)
         return Response(serializer.data, status = status.HTTP_200_OK)
+    
+
+class CrawlNewsView(APIView):
+    def get(self, request, *args, **kwargs):
+        url = request.query_params.get('url')
+        if not url:
+            return Response({"error": "URL parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            news = crawl_news(url)
+            return Response({
+                "channel_id": 1,
+                "title": news.title,
+                "content": news.content,
+                "published_date": news.published_date
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CrawlAllNewsView(APIView):
+    def get(self, request, *args, **kwargs):
+        url = 'https://news.naver.com/section/105'
+        if not url:
+            return Response({"error": "URL parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            crawl_all_news(url)
+            return Response({"status": "success"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
