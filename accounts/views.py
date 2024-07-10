@@ -14,7 +14,6 @@ class SignupAPIView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data.get('email')
-
             if User.objects.filter(email=email).exists():
                 return Response({"이미 존재하는 회원입니다."}, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()

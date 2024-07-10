@@ -9,6 +9,11 @@ class Channel_Serializer(serializers.ModelSerializer):
         model = Channel
         fields = '__all__'
 
+class Channel_name_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Channel
+        fields = ['name']
+        
 class ChannelsScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChannelScore
