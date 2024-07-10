@@ -18,3 +18,5 @@ class ClassifyNewsUpdateSerializer(serializers.ModelSerializer):
         model = ClassifyNews
         fields = ("score", "reason")
 
+class PageParameterSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
