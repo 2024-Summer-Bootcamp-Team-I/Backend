@@ -1,27 +1,30 @@
-import logging
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from .models import Channel, ChannelScore
 from classify_news.models import ClassifyNews
-from .serializers import Channel_Serializer, CorrectResponse_Serializer, ChannelsScoreSerializer, ChannelScoreSerializer
+from .serializers import CorrectResponse_Serializer, ChannelsScoreSerializer, ChannelScoreSerializer, Channel_name_Serializer
 from django.db.models import Avg, Max
 from apscheduler.schedulers.background import BackgroundScheduler
 
 class save_channel_APIView(APIView):
     @swagger_auto_schema(operation_summary="언론사 저장", 
-                         request_body=Channel_Serializer, 
+                         request_body=Channel_name_Serializer, 
                          responses={201:CorrectResponse_Serializer, 404:"입력정보 오류"})
     def post(self, request):
         name = request.data.get('name')
         if Channel.objects.filter(name=name).exists():
-            return Response({"message": "이미 존재하는 언론사입니다."}, status=status.HTTP_200_OK)
-
-        serializer = Channel_Serializer(data=request.data)
+            channel = Channel.objects.get(name=name)
+            return Response({"message": "이미 존재하는 언론사입니다.", "id": channel.id}, status=status.HTTP_200_OK)
+        
+        serializer = Channel_name_Serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "언론사가 저장되었습니다."}, status=status.HTTP_201_CREATED)
+            try:
+                channel = serializer.save()
+                return Response({"message": "언론사가 저장되었습니다.", "id": channel.id}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -74,11 +77,7 @@ class channel_score_APIView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 def save_channel_scores():
-    logger.info("주기적 작업 시작")
     channels = Channel.objects.all()
     for channel in channels:
         avg_score = ClassifyNews.objects.filter(news_id__channel_id=channel.id).aggregate(average_score=Avg('score'))['average_score']
@@ -87,9 +86,7 @@ def save_channel_scores():
                 channel=channel, 
                 score=avg_score
             )
-            logger.info(f"채널 {channel.id}의 점수 {avg_score} 저장됨")
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(save_channel_scores, 'interval', hours=1) 
 scheduler.start()
-logger.info("스케줄러 시작됨")

@@ -7,7 +7,6 @@ class news_data_Serializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = '__all__'
-
 class news_score_Serializer(serializers.ModelSerializer):
     classifynews_score = ClassifyNews
 

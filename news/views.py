@@ -5,6 +5,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .models import News
 from .serializers import news_data_Serializer, correctrespones_Serializer
 from .crowling import crawl_all_news, crawl_news
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class news_APIView(APIView):
     @swagger_auto_schema(operation_summary="뉴스기사 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
@@ -33,14 +34,15 @@ class news_list_APIView(APIView):
     
 
 class CrawlNewsView(APIView):
+    @swagger_auto_schema(operation_summary="뉴스기사 개별 크롤링", responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
     def get(self, request, *args, **kwargs):
-        url = request.query_params.get('url')
+        url = request.get('url')
         if not url:
             return Response({"error": "URL parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             news = crawl_news(url)
             return Response({
-                "channel_id": 1,
+                "channel_id": news.channel_id,
                 "title": news.title,
                 "content": news.content,
                 "published_date": news.published_date
@@ -48,13 +50,14 @@ class CrawlNewsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class CrawlAllNewsView(APIView):
-    def get(self, request, *args, **kwargs):
-        url = 'https://news.naver.com/section/105'
-        if not url:
-            return Response({"error": "URL parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            crawl_all_news(url)
-            return Response({"status": "success"}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+def crawl_all_news_job():
+    url = 'https://news.naver.com/section/105'
+    try:
+        crawl_all_news(url)
+        print("크롤링 작업 완료")
+    except Exception as e:
+        print(f"크롤링 중 오류 발생: {e}")
+        
+scheduler = BackgroundScheduler()
+scheduler.add_job(crawl_all_news_job, 'interval', minutes=1) 
+scheduler.start()

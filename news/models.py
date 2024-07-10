@@ -7,6 +7,7 @@ class News(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     category = models.CharField(max_length=20)
+    img = models.TextField(default="image")
     published_date = models.CharField()
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
