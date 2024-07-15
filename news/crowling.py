@@ -31,7 +31,8 @@ def crawl_news(url):
             title=title.text.strip(),
             content=body.text.strip(),
             published_date=published_date.get('data-date-time'),
-            img = img_src
+            img = img_src,
+            url = url
         )
         news.save()
         return news

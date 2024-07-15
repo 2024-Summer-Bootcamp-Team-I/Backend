@@ -6,6 +6,7 @@ class News(models.Model):
     channel = models.ForeignKey(Channel, related_name='news', on_delete=models.DO_NOTHING)
     title = models.CharField(max_length=100)
     content = models.TextField()
+    url = models.URLField(null=True)
     category = models.CharField(max_length=20)
     img = models.TextField(default="image")
     published_date = models.CharField()
