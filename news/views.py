@@ -51,7 +51,7 @@ class CrawlNewsView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def crawl_all_news_job():
-    url = 'https://news.naver.com/section/105'
+    url = 'https://news.naver.com/section/100'
     try:
         crawl_all_news(url)
         print("크롤링 작업 완료")
