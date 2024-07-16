@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 from .models import News
+from transformers import PreTrainedTokenizerFast, BartForConditionalGeneration
 
 def get_channel_id(channel_name):
     response = requests.post('http://127.0.0.1:8000/api/v1/channels/', json={'name':channel_name})    
@@ -22,20 +23,23 @@ def crawl_news(url):
     channel_id = get_channel_id(channel_name)
     img = soup.find('img', id='img1', class_="_LAZY_LOADING _LAZY_LOADING_INIT_HIDE")
     img_src = img.get('data-src')
-    
+        
     if News.objects.filter(title=title.text.strip()).exists():
+        print("있는 기사임")
         return
     else:
         news = News(
             channel_id = channel_id,
-            title=title.text.strip(),
-            content=body.text.strip(),
+            title = title.text.strip(),
+            content = body.text.strip(),
             published_date=published_date.get('data-date-time'),
             img = img_src,
-            url = url
+            url = url,
+            
         )
         news.save()
         return news
+
 
 def crawl_all_news(url):
     list_html = requests.get(url).text
@@ -44,6 +48,24 @@ def crawl_all_news(url):
     
     for news_link in news_links:
         try:
-            crawl_news(news_link.get('href'))
+            news=crawl_news(news_link.get('href'))
+            if news:
+                print("news있음")
+                summarize = summarizer(news.content)
+                news.summarize = summarize
+                news.save()
+                print("요약저장완료")
         except Exception as e:
             print(f"Error processing {news_link.get('href')}: {e}")
+
+tokenizer = PreTrainedTokenizerFast.from_pretrained('digit82/kobart-summarization')
+model = BartForConditionalGeneration.from_pretrained('digit82/kobart-summarization')
+
+def summarizer(text):
+    text = text.replace('\n', ' ')
+
+    raw_input_ids = tokenizer.encode(text, return_tensors="pt")
+    input_ids = raw_input_ids[0]
+
+    summary_ids = model.generate(input_ids.unsqueeze(0), num_beams=4, max_length=512, eos_token_id=tokenizer.eos_token_id)
+    return tokenizer.decode(summary_ids.squeeze().tolist(), skip_special_tokens=True)
