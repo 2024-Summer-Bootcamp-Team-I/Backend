@@ -1,9 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from drf_yasg.utils import swagger_auto_schema
-
 from .models import User
 from .serializers import UserSerializer, LoginResponseSerializer, SigninResponseSerializer, LoginSerializer
 
@@ -16,7 +14,7 @@ class SignupAPIView(APIView):
             email = serializer.validated_data.get('email')
 
             if '@' not in email:
-                return Response({"error": "이메일 형식이 잘못되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"이메일 형식이 잘못되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
             
             if User.objects.filter(email=email).exists():
                 return Response({"이미 존재하는 회원입니다."}, status=status.HTTP_400_BAD_REQUEST)

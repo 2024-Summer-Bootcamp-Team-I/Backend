@@ -32,11 +32,10 @@ class news_list_APIView(APIView):
         serializer = news_data_Serializer(news)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
-
 class CrawlNewsView(APIView):
     @swagger_auto_schema(operation_summary="뉴스기사 개별 크롤링", responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
     def get(self, request, *args, **kwargs):
-        url = request.get('url')
+        url = request.query_params.get('url')
         if not url:
             return Response({"error": "URL parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -50,8 +49,9 @@ class CrawlNewsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 def crawl_all_news_job():
-    url = 'https://news.naver.com/section/100'
+    url = 'https://news.naver.com/section/105'
     try:
         crawl_all_news(url)
         print("크롤링 작업 완료")
@@ -59,5 +59,5 @@ def crawl_all_news_job():
         print(f"크롤링 중 오류 발생: {e}")
         
 scheduler = BackgroundScheduler()
-scheduler.add_job(crawl_all_news_job, 'interval', hours=1) 
+scheduler.add_job(crawl_all_news_job, 'interval', minutes=2) 
 scheduler.start()
