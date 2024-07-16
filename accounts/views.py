@@ -14,8 +14,13 @@ class SignupAPIView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data.get('email')
+
+            if '@' not in email:
+                return Response({"error": "이메일 형식이 잘못되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            
             if User.objects.filter(email=email).exists():
                 return Response({"이미 존재하는 회원입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            
             serializer.save()
             return Response({"회원가입이 완료되었습니다."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
