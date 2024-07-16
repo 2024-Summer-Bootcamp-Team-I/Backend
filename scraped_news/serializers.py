@@ -9,9 +9,10 @@ class ScrapedNewsSerializer(serializers.ModelSerializer):
         fields = ("news", "user_id", "created_at","updated_at","is_deleted")
 
 class ScrapedNewsCreateSerializer(serializers.ModelSerializer):
+    url = serializers.CharField(max_length = 100)
     class Meta:
         model = ScrapedNews
-        fields = ("news_id",)
+        fields = ("url",)
 
 class UserIdParameterSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()

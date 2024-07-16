@@ -2,10 +2,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserIdParameterSerializer, ScrapedNewsSerializer, ScrapedNewsCreateSerializer
+from .serializers import UserIdParameterSerializer, ScrapedNewsCreateSerializer, ScrapedNewsSerializer
 from .models import ScrapedNews
 from accounts.models import User
 from .models import ScrapedNews
+from news.models import News
 from classify_news.models import ClassifyNews
 
 from drf_yasg.utils import swagger_auto_schema
@@ -32,19 +33,26 @@ class ScrapsAPIView(APIView):
     def post(self, request):
         user_id = request.query_params.get('user_id')
         user = get_object_or_404(User, pk = user_id)
-        news_id = request.data.get('news_id')
-        if not ClassifyNews.objects.filter(pk=news_id).exists():
-            return Response({"detail": "news_id가 유효하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        scraped_news = ScrapedNews.objects.filter(news_id = news_id, is_deleted = True).first()
+        url = request.data.get('url')
+
+        news = News.objects.filter(url=url).first()
+        if not news:
+            return Response({"detail": "url에 해당하는 뉴스가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        scraped_news = ScrapedNews.objects.filter(news_id=news, is_deleted=True).first()
         if scraped_news:
             scraped_news.is_deleted = False
-            scraped_news.save()
-            return Response({"message":"기사를 스크랩했습니다"}, status=status.HTTP_201_CREATED)
+            serializer = ScrapedNewsSerializer(scraped_news)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         serializer = ScrapedNewsCreateSerializer(data = request.data)
         if serializer.is_valid():
-            serializer.save(user_id = user)
-            return Response({"message":"기사를 스크랩했습니다"}, status=status.HTTP_201_CREATED)
+            scraped_news = ScrapedNews.objects.create(user_id=user, news_id=news)
+            serializer = ScrapedNewsSerializer(scraped_news)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
 
 
 class ScrapAPIView(APIView):
