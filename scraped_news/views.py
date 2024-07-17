@@ -30,7 +30,7 @@ class ScrapsAPIView(APIView):
         request_body=ScrapedNewsCreateSerializer,
         responses={201: ScrapedNewsCreateSerializer()},
     )
-    def post(self, request):
+    def post(self, request): 
         user_id = request.query_params.get('user_id')
         user = get_object_or_404(User, pk = user_id)
         url = request.data.get('url')
