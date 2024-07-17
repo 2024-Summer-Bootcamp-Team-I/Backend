@@ -43,6 +43,7 @@ class ScrapsAPIView(APIView):
         if scraped_news:
             scraped_news.is_deleted = False
             serializer = ScrapedNewsSerializer(scraped_news)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         serializer = ScrapedNewsCreateSerializer(data = request.data)
