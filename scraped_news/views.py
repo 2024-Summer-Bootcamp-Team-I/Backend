@@ -42,9 +42,10 @@ class ScrapsAPIView(APIView):
         scraped_news = ScrapedNews.objects.filter(news_id=news, is_deleted=True).first()
         if scraped_news:
             scraped_news.is_deleted = False
-            serializer = ScrapedNewsSerializer(scraped_news)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = ScrapedNewsSerializer(scraped_news, data={'is_deleted': False}, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         serializer = ScrapedNewsCreateSerializer(data = request.data)
         if serializer.is_valid():
@@ -60,14 +61,14 @@ class ScrapAPIView(APIView):
     @swagger_auto_schema(
         operation_summary="뉴스 스크랩 취소",
         query_serializer=UserIdParameterSerializer,
-        responses={status.HTTP_204_NO_CONTENT: '뉴스 없다. 잘 삭제함'},
+        responses={status.HTTP_204_NO_CONTENT: '뉴스를 삭제했습니다.'},
     )
     def delete(self, request, news_id):
         user_id = request.query_params.get('user_id')
         user = get_object_or_404(User, pk = user_id)
         scraped_news = ScrapedNews.objects.filter(news_id = news_id, user_id = user, is_deleted = False).first()
         if not scraped_news:
-            return Response({"detail": "뉴스가 없어요"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "뉴스가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         scraped_news.is_deleted = True
         scraped_news.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
