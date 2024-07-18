@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from .models import News
-from .serializers import news_data_Serializer, correctrespones_Serializer
+from .serializers import news_data_Serializer, correctrespones_Serializer, news_count_Serializer
 from .crowling import crawl_all_news, crawl_news
 from apscheduler.schedulers.background import BackgroundScheduler
+from django.db.models import Count
 
 class news_APIView(APIView):
     @swagger_auto_schema(operation_summary="뉴스기사 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
@@ -49,6 +50,13 @@ class CrawlNewsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class CountNewsAPIView(APIView):
+    @swagger_auto_schema(operation_summary="뉴스기사 개수 조회", responses= {200:news_count_Serializer})
+    def get (self, request):
+        counts = News.objects.values('created_at').annotate(news_count = Count('news_id')).order_by('-created_at')[:7]
+        serializer = news_count_Serializer(counts, many = True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 def crawl_all_news_job():
     url = 'https://news.naver.com/section/105'
