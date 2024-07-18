@@ -1,15 +1,13 @@
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
 from .models import ClassifyNews
 from news.models import News
 from .serializers import ClassifyNewsSerializer, ClassifyNewsCreateSerializer, ClassifyNewsUpdateSerializer, PageParameterSerializer
-
 from drf_yasg.utils import swagger_auto_schema
+from .sentiment import analyze_sentiment, recommend_similar_articles
 
 class ClassifiesAPIView(APIView):
     @swagger_auto_schema(
@@ -44,9 +42,47 @@ class ClassifyAPIView(APIView):
         responses={200: ClassifyNewsSerializer()},
     )
     def get(self, request, news_id):
-        classify = get_object_or_404(ClassifyNews, news_id = news_id)
-        serializer = ClassifyNewsSerializer(classify)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        classify = get_object_or_404(ClassifyNews, news_id=news_id)
+        
+        news = classify.news_id
+        target_article = news.content
+
+        target_score, target_magnitude = analyze_sentiment(target_article)
+        articles = list(News.objects.all())
+        article_index = articles.index(news)
+        recommendations = recommend_similar_articles(article_index, articles)
+        
+        similar_articles = []
+        opposite_articles = []
+        
+        for similar_news, score in recommendations:
+            similar_score, similar_magnitude = analyze_sentiment(similar_news.content)
+            article_data = {
+                "news_id": similar_news.news_id,
+                "channel_id": similar_news.channel_id,
+                "title": similar_news.title,
+                "similarity": score,
+                "sentiment_score": similar_score,
+                "sentiment_magnitude": similar_magnitude
+            }
+            if score > 0.1:
+                if (target_score < 0 and similar_score > 0) or (target_score > 0 and similar_score < 0):
+                    opposite_articles.append(article_data)
+                similar_articles.append(article_data)
+                
+        response_data = {
+            "classify_news": ClassifyNewsSerializer(classify).data,
+            "target_article": {
+                "title": news.title,
+                "channel_id": news.channel_id,
+                "sentiment_score": target_score,
+                "sentiment_magnitude": target_magnitude
+            },
+            "similar_articles": similar_articles,
+            "opposite_articles": opposite_articles   
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary="뉴스 재판별",
