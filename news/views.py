@@ -54,7 +54,7 @@ class CrawlNewsView(APIView):
 class CountNewsAPIView(APIView):
     @swagger_auto_schema(operation_summary="뉴스기사 개수 조회", responses= {200:news_count_Serializer})
     def get (self, request):
-        counts = News.objects.values('created_at').annotate(news_count = Count('news_id')).order_by('created_at')
+        counts = News.objects.values('created_at').annotate(news_count = Count('news_id')).order_by('-created_at')[:7]
         serializer = news_count_Serializer(counts, many = True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
