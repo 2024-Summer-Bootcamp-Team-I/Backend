@@ -67,5 +67,5 @@ def crawl_all_news_job():
         print(f"크롤링 중 오류 발생: {e}")
         
 scheduler = BackgroundScheduler()
-scheduler.add_job(crawl_all_news_job, 'interval', minutes=2) 
+scheduler.add_job(crawl_all_news_job, 'interval', hours=2) 
 scheduler.start()
