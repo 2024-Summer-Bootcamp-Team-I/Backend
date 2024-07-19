@@ -1,4 +1,4 @@
-version: '3.9'  # 최신 버전으로 업데이트
+version: '3.9'
 
 services:
   cadvisor:
@@ -50,7 +50,7 @@ services:
     networks:
       - fakenews
     env_file:
-      - .env
+      - .env  # .env 파일 경로를 수정합니다
 
   backend:
     container_name: backend
@@ -70,8 +70,9 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/usr/src/app
+      - ./backend/service-account-file.json:/usr/src/app/service-account-file.json
     env_file:
-      - .env
+      - .env  # .env 파일 경로를 수정합니다
     depends_on:
       - db
     networks:
