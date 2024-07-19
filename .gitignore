@@ -168,3 +168,5 @@ data
 certbot
 backend/erlang.cookie
 mnesia/*
+
+service-account-file.json

@@ -1,11 +1,23 @@
+import os
 from google.cloud import language_v1
+from google.oauth2 import service_account
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from dotenv import load_dotenv
 
+# .env 파일의 환경 변수를 로드합니다.
+load_dotenv()
 
-client = language_v1.LanguageServiceClient()
+def create_client():
+    # 서비스 계정 키 파일 경로를 환경 변수에서 가져옵니다.
+    credentials = service_account.Credentials.from_service_account_file(
+        os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    )
+    client = language_v1.LanguageServiceClient(credentials=credentials)
+    return client
 
 def analyze_sentiment(text):
+    client = create_client()
     try:
         document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
         sentiment = client.analyze_sentiment(request={'document': document}).document_sentiment
@@ -13,6 +25,8 @@ def analyze_sentiment(text):
     except Exception as e:
         print(f"Error analyzing sentiment: {e}")
         return None, None
+
+
 
 
 def recommend_similar_articles(article_index, articles, top_n=5):
