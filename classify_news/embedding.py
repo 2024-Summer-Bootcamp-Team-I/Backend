@@ -8,6 +8,10 @@ from opensearchpy import OpenSearch
 from langchain_community.document_loaders import DirectoryLoader
 import torch
 from transformers import AutoTokenizer, AutoModel
+import nltk
+
+# NLTK 데이터 다운로드
+nltk.download('averaged_perceptron_tagger')
 
 dotenv.load_dotenv()
 
@@ -19,18 +23,19 @@ opensearch_url = os.environ.get("OPENSEARCH_URL")
 # 인증 정보 설정
 opensearch_auth = (opensearch_id, opensearch_password)
 
-# OpenSearch 클라이언트를 초기화
-opensearch_client = OpenSearch(hosts=[opensearch_url], http_auth=opensearch_auth)
+# 인증 정보가 올바르게 설정되었는지 확인
+if None in opensearch_auth or None in (opensearch_id, opensearch_password, opensearch_url):
+    raise ValueError("OpenSearch 인증 정보가 설정되지 않았습니다.")
 
-# # OpenSearch 클라이언트 초기화
-# client = OpenSearch(
-#         hosts=[{"host": "localhost", "port": 9200}],
-#         http_auth=("admin", "A769778aa!"),
-#         use_ssl=True,
-#         verify_certs=False,
-#         ssl_assert_hostname=False,
-#         ssl_show_warn=False,
-#     )
+# OpenSearch 클라이언트를 초기화
+opensearch_client = OpenSearch(
+    hosts=[opensearch_url],
+    http_auth=opensearch_auth,
+    use_ssl=True,
+    verify_certs=False,
+    ssl_assert_hostname=False,
+    ssl_show_warn=False
+)
 
 class MyEmbeddingModel:
     def __init__(self, model_name):
@@ -55,7 +60,6 @@ class MyEmbeddingModel:
             # 쿼리의 임베딩을 얻기 위해 마지막 hidden state의 평균을 사용
             embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
         return embedding
-
 
 # 인덱스 구조 설정
 index_body = {
@@ -91,15 +95,12 @@ def create_metadata(docs):
     # add a custom metadata field, such as timestamp
     for idx, doc in enumerate(docs):
         doc.metadata["category"] = ""
-        doc.metadata["path"] = "news_data.txt"
-
+        doc.metadata["path"] = "classify_news/news_data.txt"
 
 embed_model_name = "BM-K/KoSimCSE-roberta-multitask"
 
-
 # metadata 만들기
-
-path = "."
+path = "C:/TecheerSummerBootcamp2024/Backend/classify_news"
 loader = DirectoryLoader(path, glob="**/*.txt", show_progress=True)
 docs = loader.load()
 create_metadata(docs)
@@ -124,10 +125,9 @@ vector_db = OpenSearchVectorSearch.from_documents(
     body=index_body,
     documents=documents,
     embedding=my_embedding,
-    op_type="create",
-    opensearch_url="https://localhost:9200",
-    http_auth=("admin", "A769778aa!"),
-    use_ssl=False,
+    opensearch_url=opensearch_url,
+    http_auth=opensearch_auth,
+    use_ssl=True,
     verify_certs=False,
     ssl_assert_hostname=False,
     ssl_show_warn=False,
@@ -136,5 +136,3 @@ vector_db = OpenSearchVectorSearch.from_documents(
 )
 
 vector_db.add_documents(documents, bulk_size=1000000)
-
-
