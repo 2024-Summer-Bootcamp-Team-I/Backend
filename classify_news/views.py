@@ -80,7 +80,9 @@ class ClassifyAPIView(APIView):
                 "title": news.title,
                 "content": news.content,
                 "channel": channel_name,
+                "img":news.img,
                 "url": news.url,
+                "summarize":news.summarize,
                 "published_date":news.published_date,
                 "sentiment_score": target_score,
                 "sentiment_magnitude": target_magnitude
