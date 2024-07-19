@@ -8,6 +8,7 @@ from news.models import News
 from .serializers import ClassifyNewsSerializer, ClassifyNewsCreateSerializer, ClassifyNewsUpdateSerializer, PageParameterSerializer
 from drf_yasg.utils import swagger_auto_schema
 from .sentiment import analyze_sentiment, recommend_similar_articles
+from channels.models import Channel
 
 class ClassifiesAPIView(APIView):
     @swagger_auto_schema(
@@ -38,7 +39,7 @@ class ClassifiesAPIView(APIView):
 
 class ClassifyAPIView(APIView):
     @swagger_auto_schema(
-        operation_summary="판별된 뉴스 개별 조회",
+        operation_summary="A",
         responses={200: ClassifyNewsSerializer()},
     )
     def get(self, request, news_id):
@@ -57,10 +58,13 @@ class ClassifyAPIView(APIView):
         
         for similar_news, score in recommendations:
             similar_score, similar_magnitude = analyze_sentiment(similar_news.content)
+            channel = get_object_or_404(Channel, id=similar_news.channel_id)
+            channel_name = channel.name
             article_data = {
                 "news_id": similar_news.news_id,
-                "channel_id": similar_news.channel_id,
+                "channel": channel_name,
                 "title": similar_news.title,
+                "url": similar_news.url,
                 "similarity": score,
                 "sentiment_score": similar_score,
                 "sentiment_magnitude": similar_magnitude
@@ -69,12 +73,15 @@ class ClassifyAPIView(APIView):
                 if (target_score < 0 and similar_score > 0) or (target_score > 0 and similar_score < 0):
                     opposite_articles.append(article_data)
                 similar_articles.append(article_data)
-                
+        channel = get_object_or_404(Channel, id=news.channel_id)
+        channel_name = channel.name
         response_data = {
-            "classify_news": ClassifyNewsSerializer(classify).data,
             "target_article": {
                 "title": news.title,
-                "channel_id": news.channel_id,
+                "content": news.content,
+                "channel": channel_name,
+                "url": news.url,
+                "published_date":news.published_date,
                 "sentiment_score": target_score,
                 "sentiment_magnitude": target_magnitude
             },
