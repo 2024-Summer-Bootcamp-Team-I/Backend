@@ -3,6 +3,7 @@ import requests
 from .models import News
 from transformers import PreTrainedTokenizerFast, BartForConditionalGeneration
 import os
+import subprocess
 
 def get_channel_id(channel_name):
     response = requests.post('http://127.0.0.1:8000/api/v1/channels/', json={'name':channel_name})    
@@ -82,6 +83,7 @@ def crawl_all_news(url):
                 print("요약저장완료")
         except Exception as e:
             print(f"Error processing {news_link.get('href')}: {e}")
+    subprocess.run(['python', 'embedding.py'], check=True)
 
 tokenizer = PreTrainedTokenizerFast.from_pretrained('digit82/kobart-summarization')
 model = BartForConditionalGeneration.from_pretrained('digit82/kobart-summarization')
