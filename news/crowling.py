@@ -22,7 +22,9 @@ def crawl_news(url):
     channel_name = channel.get('alt')
     channel_id = get_channel_id(channel_name)
     img = soup.find('img', id='img1', class_="_LAZY_LOADING _LAZY_LOADING_INIT_HIDE")
-    img_src = img.get('data-src')
+    img_src = None
+    if img is not None:
+        img_src = img.get('data-src')
         
     if News.objects.filter(title=title.text.strip()).exists():
         print("있는 기사임")

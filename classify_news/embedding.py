@@ -27,6 +27,8 @@ opensearch_auth = (opensearch_id, opensearch_password)
 if None in opensearch_auth or None in (opensearch_id, opensearch_password, opensearch_url):
     raise ValueError("OpenSearch 인증 정보가 설정되지 않았습니다.")
 
+index_name = 'duck'
+
 # OpenSearch 클라이언트를 초기화
 opensearch_client = OpenSearch(
     hosts=[opensearch_url],
@@ -36,6 +38,9 @@ opensearch_client = OpenSearch(
     ssl_assert_hostname=False,
     ssl_show_warn=False
 )
+
+# vector DB 초기화
+#response = opensearch_client.indices.delete(index=index_name, ignore=[400, 404])
 
 class MyEmbeddingModel:
     def __init__(self, model_name):
@@ -97,25 +102,28 @@ def create_metadata(docs):
         doc.metadata["category"] = ""
         doc.metadata["path"] = "classify_news/news_data.txt"
 
-embed_model_name = "BM-K/KoSimCSE-roberta-multitask"
-
 # metadata 만들기
 path = "C:/TecheerSummerBootcamp2024/Backend/classify_news"
 loader = DirectoryLoader(path, glob="**/*.txt", show_progress=True)
 docs = loader.load()
-create_metadata(docs)
+# 메타데이터 넣을 필요 없다고 생각함. 그래서 지움
+#create_metadata(docs)
 
+
+embed_model_name = "BM-K/KoSimCSE-roberta-multitask"
+
+#이게 텍스트 자르는건데 청크사이즈 크게 만들고(취소 작게 하자.) 나누는 기준을 ##로 하면 됨.
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=100,
+    chunk_size=1,
     chunk_overlap=0,
-    separators=["\n\n", "\n", "."],
+    separators=["}"],
     length_function=len,
 )
 
 documents = text_splitter.split_documents(docs)
 print(documents)
 
-index_name = 'langchain_rag_test'
+
 
 # MyEmbeddingModel의 인스턴스를 생성
 my_embedding = MyEmbeddingModel(embed_model_name)
@@ -135,4 +143,10 @@ vector_db = OpenSearchVectorSearch.from_documents(
     timeout=360000
 )
 
-vector_db.add_documents(documents, bulk_size=1000000)
+
+
+#이거때문에 중복 데이터값 저장됨. 그래서 지움. 
+#vector_db.add_documents(documents, bulk_size=1000000)
+
+response = opensearch_client.count(index=index_name)
+print(f"Number of documents in '{index_name}': {response['count']}")
