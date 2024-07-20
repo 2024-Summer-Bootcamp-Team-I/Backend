@@ -12,7 +12,7 @@ client = OpenSearch(
     ssl_show_warn=False,
 )
 
-index_name = 'langchain_rag_test'
+index_name = 'duck'
 
 
 def calc_similarity(vector1, vector2):
