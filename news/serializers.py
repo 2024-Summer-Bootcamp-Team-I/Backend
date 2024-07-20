@@ -16,6 +16,16 @@ class news_count_Serializer(serializers.ModelSerializer):
         model = News
         fields = ("news_count", "created_at")
 
+class similar_news_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        fields = ("published_date", "title" ,"url")
+
+class news_url_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        fields = ("url",)
+
 class correctrespones_Serializer(serializers.Serializer):
     message = serializers.CharField()
 

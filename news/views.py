@@ -3,10 +3,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from .models import News
-from .serializers import news_data_Serializer, correctrespones_Serializer, news_count_Serializer
+from .serializers import news_data_Serializer, correctrespones_Serializer, news_count_Serializer, similar_news_Serializer, news_url_Serializer
 from .crowling import crawl_all_news, crawl_news
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.db.models import Count
+from datetime import datetime, timedelta
+from django.db.models.functions import RowNumber
+from django.db.models import Window, F
+from .timeline import get_similar_news_ids
+
 
 class news_APIView(APIView):
     @swagger_auto_schema(operation_summary="뉴스기사 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
@@ -57,6 +62,34 @@ class CountNewsAPIView(APIView):
         counts = News.objects.values('created_at').annotate(news_count = Count('news_id')).order_by('-created_at')[:7]
         serializer = news_count_Serializer(counts, many = True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class NewsTimelineAPIView(APIView):
+    @swagger_auto_schema(operation_summary="뉴스 타임라인",
+        request_body=news_url_Serializer, responses= {200:news_count_Serializer})
+    def post (self, request):
+        url = request.data.get('url')
+        target_news = News.objects.filter(url=url).first()
+        target_news_id = target_news.news_id
+        target_news_date = target_news.published_date
+        start_date = (datetime.strptime(target_news_date[:10], '%Y-%m-%d') - timedelta(days=6)).strftime('%Y-%m-%d')
+        end_date = (datetime.strptime(target_news_date[:10], '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
+
+        similar_news_ids = get_similar_news_ids(target_news_id)
+        similar_news = News.objects.filter(
+            news_id__in = similar_news_ids, 
+            published_date__gte = start_date, 
+            published_date__lt = end_date
+            ).values('published_date', 'title', 'url').annotate(row_num=Window(
+                expression=RowNumber(),
+                order_by=F('published_date').desc()
+                )).filter(row_num__lte=5).order_by('-published_date')
+
+        serializer = similar_news_Serializer(similar_news, many = True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
 
 def crawl_all_news_job():
     url = 'https://news.naver.com/section/105'

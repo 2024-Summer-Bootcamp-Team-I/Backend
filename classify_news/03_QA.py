@@ -52,7 +52,7 @@ def search_documents(query):
 
 # 메인 로직
 if __name__ == "__main__":
-    user_question = "가장 최신 기사 알려줘"
+    user_question = "저장된 모든 알파벳 말해줘"
 
     # OpenSearch에서 관련 문서 검색
     search_results = search_documents(user_question)
