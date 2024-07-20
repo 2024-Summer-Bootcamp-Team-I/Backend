@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 from .models import News
 from transformers import PreTrainedTokenizerFast, BartForConditionalGeneration
+import os
 
 def get_channel_id(channel_name):
     response = requests.post('http://127.0.0.1:8000/api/v1/channels/', json={'name':channel_name})    
@@ -10,6 +11,27 @@ def get_channel_id(channel_name):
         if 'id' in data:
             return data['id']
     raise ValueError("Channel ID not found") 
+
+def init_news_content_text():
+    directory = "C:/TecheerSummerBootcamp2024/Backend/news"  # 텍스트 파일을 저장할 디렉터리
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    file_path = os.path.join(directory, "news_content.txt")
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.write("")
+    return file_path
+
+def save_news_as_text(content):
+    directory = "C:/TecheerSummerBootcamp2024/Backend/news"  # 텍스트 파일을 저장할 디렉터리
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    file_path = os.path.join(directory, "news_content.txt")
+    with open(file_path, "a", encoding="utf-8") as file:
+        file.write("♣")
+        file.write(content)
+    return file_path
 
 def crawl_news(url):
     news_html = requests.get(url).text
@@ -30,6 +52,7 @@ def crawl_news(url):
         print("있는 기사임")
         return
     else:
+        save_news_as_text(body.text.strip())
         news = News(
             channel_id = channel_id,
             title = title.text.strip(),
@@ -47,7 +70,7 @@ def crawl_all_news(url):
     list_html = requests.get(url).text
     soup = BeautifulSoup(list_html, 'html.parser')
     news_links = soup.find_all('a', class_="sa_text_title")
-    
+    init_news_content_text()
     for news_link in news_links:
         try:
             news=crawl_news(news_link.get('href'))
