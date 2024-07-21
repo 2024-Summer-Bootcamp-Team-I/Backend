@@ -121,3 +121,4 @@ wcwidth==0.2.13
 yarl==1.9.4
 youtube-transcript-api==0.6.2
 zope.interface==6.1
+opensearch-py
