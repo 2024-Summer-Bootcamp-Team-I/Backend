@@ -11,9 +11,10 @@ WORKDIR /Backend
 # 필요한 파일들을 복사
 COPY requirements.txt requirements.txt
 
-# pip을 최신 버전으로 업그레이드하고 필요 패키지 설치
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+#RUN apt-get update && apt-get install -y libmagic1 libmagic-dev
 
 # 소스 코드 복사
 COPY . .

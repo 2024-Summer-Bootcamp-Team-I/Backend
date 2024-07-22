@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import requests
 from .models import News
 from transformers import PreTrainedTokenizerFast, BartForConditionalGeneration
+import os
+from .news_embedding import news_embedding
 
 def get_channel_id(channel_name):
     response = requests.post('http://127.0.0.1:8000/api/v1/channels/', json={'name':channel_name})    
@@ -10,6 +12,23 @@ def get_channel_id(channel_name):
         if 'id' in data:
             return data['id']
     raise ValueError("Channel ID not found") 
+
+def init_news_content_text():
+    directory = os.path.dirname(__file__)
+    
+    file_path = os.path.join(directory, "news_content.txt")
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.write("")
+    return file_path
+
+def save_news_as_text(content, news_id):
+    directory = os.path.dirname(__file__)
+    
+    file_path = os.path.join(directory, "news_content.txt")
+    with open(file_path, "a", encoding="utf-8") as file:
+        file.write("♣id:"+str(news_id).zfill(5)+",content:")
+        file.write(content+"\n")
+    return file_path
 
 def crawl_news(url):
     news_html = requests.get(url).text
@@ -37,9 +56,9 @@ def crawl_news(url):
             published_date=published_date.get('data-date-time'),
             img = img_src,
             url = url,
-            
         )
         news.save()
+        save_news_as_text(body.text.strip(), news.news_id)
         return news
 
 
@@ -47,7 +66,7 @@ def crawl_all_news(url):
     list_html = requests.get(url).text
     soup = BeautifulSoup(list_html, 'html.parser')
     news_links = soup.find_all('a', class_="sa_text_title")
-    
+    init_news_content_text()
     for news_link in news_links:
         try:
             news=crawl_news(news_link.get('href'))
@@ -59,6 +78,8 @@ def crawl_all_news(url):
                 print("요약저장완료")
         except Exception as e:
             print(f"Error processing {news_link.get('href')}: {e}")
+    news_embedding()
+    
 
 tokenizer = PreTrainedTokenizerFast.from_pretrained('digit82/kobart-summarization')
 model = BartForConditionalGeneration.from_pretrained('digit82/kobart-summarization')
