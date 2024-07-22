@@ -11,6 +11,7 @@ import nltk
 def news_embedding():
     # NLTK 데이터 다운로드
     nltk.download('averaged_perceptron_tagger')
+    nltk.download('punkt')
 
     dotenv.load_dotenv()
 
@@ -101,7 +102,8 @@ def news_embedding():
             doc.metadata["path"] = "classify_news/news_data.txt"
 
     # metadata 만들기
-    path = "C:/TecheerSummerBootcamp2024/Backend/news"
+    current_directory = os.path.dirname(__file__)
+    path = os.path.join(current_directory)
     loader = DirectoryLoader(path, glob="**/*.txt", show_progress=True)
     docs = loader.load()
     # 메타데이터 넣을 필요 없다고 생각함. 그래서 지움
@@ -151,4 +153,3 @@ def news_embedding():
 
     # vector DB 초기화
     #response = opensearch_client.indices.delete(index=index_name, ignore=[400, 404])
-    

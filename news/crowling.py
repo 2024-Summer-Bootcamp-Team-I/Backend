@@ -3,7 +3,6 @@ import requests
 from .models import News
 from transformers import PreTrainedTokenizerFast, BartForConditionalGeneration
 import os
-import subprocess
 from .news_embedding import news_embedding
 
 def get_channel_id(channel_name):
@@ -15,24 +14,20 @@ def get_channel_id(channel_name):
     raise ValueError("Channel ID not found") 
 
 def init_news_content_text():
-    directory = "C:/TecheerSummerBootcamp2024/Backend/news"  # 텍스트 파일을 저장할 디렉터리
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    directory = os.path.dirname(__file__)
     
     file_path = os.path.join(directory, "news_content.txt")
     with open(file_path, "w", encoding="utf-8") as file:
         file.write("")
     return file_path
 
-def save_news_as_text(content):
-    directory = "C:/TecheerSummerBootcamp2024/Backend/news"  # 텍스트 파일을 저장할 디렉터리
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+def save_news_as_text(content, news_id):
+    directory = os.path.dirname(__file__)
     
     file_path = os.path.join(directory, "news_content.txt")
     with open(file_path, "a", encoding="utf-8") as file:
-        file.write("♣")
-        file.write(content)
+        file.write("♣id:"+str(news_id).zfill(5)+",content:")
+        file.write(content+"\n")
     return file_path
 
 def crawl_news(url):
@@ -54,7 +49,6 @@ def crawl_news(url):
         print("있는 기사임")
         return
     else:
-        save_news_as_text(body.text.strip())
         news = News(
             channel_id = channel_id,
             title = title.text.strip(),
@@ -62,9 +56,9 @@ def crawl_news(url):
             published_date=published_date.get('data-date-time'),
             img = img_src,
             url = url,
-            
         )
         news.save()
+        save_news_as_text(body.text.strip(), news.news_id)
         return news
 
 
