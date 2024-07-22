@@ -1,5 +1,4 @@
-version: '3.9'
-
+version: '3'
 services:
   # cadvisor:
   #   image: google/cadvisor:latest
@@ -48,38 +47,45 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     networks:
-      - fakenews
+      - backend-network
     env_file:
-      - .env  # .env 파일 경로를 수정합니다
+      - .env
 
   backend:
     container_name: backend
     build: ./
     command: >
       sh -c "
-        python manage.py makemigrations accounts && 
-        python manage.py makemigrations channels && 
-        python manage.py makemigrations classify_news && 
-        python manage.py makemigrations feedbacks && 
-        python manage.py makemigrations news && 
-        python manage.py makemigrations scraped_news && 
-        python manage.py migrate && 
-        python manage.py runserver 0.0.0.0:8000
+        python manage.py collectstatic --noinput &&
+        python manage.py migrate &&
+        gunicorn --bind 0.0.0.0:8000 djangoIteam.wsgi:application
       "
-    ports:
-      - "8000:8000"
     volumes:
-      - ./backend:/usr/src/app
-      - ./backend/service-account-file.json:/usr/src/app/service-account-file.json
+      - .:/Backend
+      - ./service-account-file.json:/Backend/service-account-file.json
     env_file:
-      - .env  # .env 파일 경로를 수정합니다
+      - .env
     depends_on:
       - db
     networks:
-      - fakenews
+      - backend-network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./staticfiles:/Backend/staticfiles 
+      - ./media:/Backend/media 
+    depends_on:
+      - backend
+    networks:
+      - backend-network
 
 networks:
-  fakenews:
+  backend-network:
     driver: bridge
   monitoring:
     driver: bridge
