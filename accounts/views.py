@@ -32,6 +32,10 @@ class LoginAPIView(APIView):
             password = serializer.validated_data.get('password')
             if User.objects.filter(email=email, password=password).exists():
                 user = User.objects.get(email=email)
-                return Response({'message': '로그인 되었습니다.'}, status=status.HTTP_200_OK)
+                resp_serializer = LoginResponseSerializer(data={'message': '로그인 되었습니다.', 'user_id' : user.user_id})
+                if resp_serializer.is_valid():
+                    return Response(resp_serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(resp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             return Response({'message': '아이디 또는 비밀번호가 잘못되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
