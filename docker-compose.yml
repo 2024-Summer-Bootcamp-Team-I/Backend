@@ -78,6 +78,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./staticfiles:/usr/src/app/staticfiles
+
     depends_on:
       - backend
     networks:
