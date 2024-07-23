@@ -14,12 +14,18 @@ load_dotenv(dotenv_path=env_path)
 SECRET_KEY = "django-insecure-xao+6qmvs4&9zd)4n*s4bkdov^4k!78$+6@23j8_4g1rj%h-6w"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*'] # 모든 IP를 허용
 
 
-# Application definition
+# settings.py
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'staticfiles/dist'),
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
