@@ -77,8 +77,8 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./staticfiles:/Backend/staticfiles 
-      - ./media:/Backend/media 
+      - ./staticfiles:/usr/src/app/staticfiles
+
     depends_on:
       - backend
     networks:

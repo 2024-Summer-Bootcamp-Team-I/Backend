@@ -6,11 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+
 # Distribution / packaging
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -170,3 +170,6 @@ backend/erlang.cookie
 mnesia/*
 
 service-account-file.json
+staticfiles/admin
+staticfiles/drf-yasg
+staticfiles/rest_framework
