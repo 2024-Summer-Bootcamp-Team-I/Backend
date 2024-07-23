@@ -170,3 +170,6 @@ backend/erlang.cookie
 mnesia/*
 
 service-account-file.json
+staticfiles/admin
+staticfiles/drf-yasg
+staticfiles/rest_framework
