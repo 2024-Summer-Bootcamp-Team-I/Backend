@@ -170,3 +170,4 @@ backend/erlang.cookie
 mnesia/*
 
 service-account-file.json
+fake_pem.pem
