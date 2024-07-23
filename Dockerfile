@@ -20,7 +20,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Google Cloud 서비스 계정 JSON 파일 복사
-COPY service-account-file.json service-account-file.json
+COPY service-account-file.json service-account-file.b64
 
 # 환경 변수 설정
 ENV GOOGLE_APPLICATION_CREDENTIALS=service-account-file.json

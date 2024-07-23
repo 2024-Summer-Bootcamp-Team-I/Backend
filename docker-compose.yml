@@ -62,7 +62,7 @@ services:
       "
     volumes:
       - .:/Backend
-      - ./service-account-file.json:/Backend/service-account-file.json
+      - ./service-account-file.b64:/Backend/service-account-file.b64
     env_file:
       - .env
     depends_on:
