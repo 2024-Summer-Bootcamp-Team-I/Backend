@@ -13,18 +13,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-      - name: Build Docker image
+      - name: Install dependencies
         run: |
-          docker build -t myapp:latest .
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Save Docker image as tar
+      - name: Decode service account file
+        env:
+          SERVICE_ACCOUNT_FILE: ${{ secrets.SERVICE_ACCOUNT_FILE }}
         run: |
-          docker save myapp:latest -o myapp.tar
+          echo "${SERVICE_ACCOUNT_FILE}" | base64 --decode > /path/to/service-account-file.json
 
-      - name: Deploy Docker image to EC2
+      - name: Deploy to EC2
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -34,14 +39,11 @@ jobs:
           echo "${SSH_PRIVATE_KEY}" > private_key.pem
           chmod 600 private_key.pem
 
-          # Sync Docker image to EC2 instance
-          scp -i private_key.pem myapp.tar ${EC2_USER}@${EC2_HOST}:/home/ubuntu/
+          # Sync files to EC2 instance
+          rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" . ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend
 
-          # Run Docker commands on EC2 instance
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
-            docker load -i /home/ubuntu/myapp.tar
-            docker run -d --name myapp-container -p 80:80 myapp:latest
-          EOF
+          # Run deployment script on EC2 instance
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "cd /home/ubuntu/Backend && ./deploy.sh"
 
           # Clean up the private key file
           rm private_key.pem
