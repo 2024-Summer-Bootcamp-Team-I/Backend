@@ -7,7 +7,7 @@ class ClassifyNewsSerializer(serializers.ModelSerializer):
     channel_name = serializers.SerializerMethodField()
     class Meta:
         model = ClassifyNews
-        fields = ("news", "score", "reason", "created_at","updated_at","is_deleted")
+        fields = ("news", "channel_name", "score", "reason", "created_at","updated_at","is_deleted")
 
     def get_channel_name(self, obj):
         return obj.news_id.channel.name
