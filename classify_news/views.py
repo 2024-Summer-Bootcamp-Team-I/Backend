@@ -37,6 +37,22 @@ class ClassifiesAPIView(APIView):
             return Response({"message":"기사를 판별했습니다"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ClassifyCAPIView(APIView):
+    @swagger_auto_schema(
+        operation_summary="C",
+        responses={200: ClassifyNewsSerializer()},
+    )
+    def get(self, request, news_id):
+        news = get_object_or_404(News, news_id=news_id)
+        classify = get_object_or_404(ClassifyNews, news_id=news_id)
+        if news.type == 'c':
+            serializer = ClassifyNewsSerializer(classify)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Type is not 'c'"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class ClassifyAPIView(APIView):
     @swagger_auto_schema(
         operation_summary="A",
@@ -105,4 +121,3 @@ class ClassifyAPIView(APIView):
             serializer.save()
             return Response({"message":"기사 판별이 업데이트 되었습니다."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
