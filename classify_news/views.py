@@ -24,7 +24,11 @@ class ClassifiesAPIView(APIView):
         paginator = Paginator(classifies, 9)
         page_obj = paginator.get_page(page)
         serializer = ClassifyNewsSerializer(page_obj, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_data = {
+            'total_pages': paginator.num_pages,
+            'results': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
     @swagger_auto_schema(
         operation_summary="뉴스 판별",
         request_body=ClassifyNewsCreateSerializer,
