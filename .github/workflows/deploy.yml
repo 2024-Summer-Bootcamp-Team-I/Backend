@@ -40,7 +40,6 @@ jobs:
 
           # Transfer files to EC2
           scp -i private_key.pem -o StrictHostKeyChecking=no .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
-          scp -i private_key.pem -o StrictHostKeyChecking=no .github/workflows/deploy.sh ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
 
           # Connect to EC2 instance and run deployment script
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
