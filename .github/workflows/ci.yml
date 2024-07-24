@@ -16,7 +16,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-       - name: Log in to Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -24,12 +24,11 @@ jobs:
 
       - name: Build Docker image
         env:
-          SERVICE_ACCOUNT_FILE_B64: ${{ secrets.SERVICE_ACCOUNT_FILE }}
+          SERVICE_ACCOUNT_FILE: ${{ secrets.SERVICE_ACCOUNT_FILE }}
         run: |
-          echo "$SERVICE_ACCOUNT_FILE_B64" | base64 -d > service-account-file.json
-          docker build -t myapp:latest .
+          echo "${SERVICE_ACCOUNT_FILE}" > service-account-file.json
+          docker build -t dlaehddus18/fake_news:latest .
 
       - name: Push Docker image
         run: |
-          docker tag fake_news:latest dlaehddus18/fake_news:latest
           docker push dlaehddus18/fake_news:latest

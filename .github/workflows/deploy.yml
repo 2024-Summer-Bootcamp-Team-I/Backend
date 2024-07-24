@@ -31,6 +31,7 @@ jobs:
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          SERVICE_ACCOUNT_FILE: ${{ secrets.SERVICE_ACCOUNT_FILE }}
         run: |
           # Save the SSH key to a file
           echo "${SSH_PRIVATE_KEY}" > private_key.pem
@@ -43,9 +44,12 @@ jobs:
           echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
           echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
 
+          # Save the service account file
+          echo "${SERVICE_ACCOUNT_FILE}" > service-account-file.json
+          chmod 600 service-account-file.json
+
           # Transfer files to EC2
-          scp -i private_key.pem .env ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/.env
-          scp -i private_key.pem service-account-file.b64 ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/service-account-file.b64
+          scp -i private_key.pem .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
 
           # Connect to EC2 instance and deploy
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
@@ -56,6 +60,8 @@ jobs:
             docker-compose down
             docker-compose up -d
 
-            # Clean up the SSH key file
-            rm private_key.pem
+            # Clean up
+            rm /home/ubuntu/Backend/private_key.pem
+            rm /home/ubuntu/Backend/.env
+            rm /home/ubuntu/Backend/service-account-file.json
           EOF
