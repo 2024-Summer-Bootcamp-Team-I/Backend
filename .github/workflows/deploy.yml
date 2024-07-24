@@ -13,35 +13,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Docker image
-        run: |
-          echo "Building Docker image..."
-          docker build -t myapp:latest .
-          docker save myapp:latest -o myapp.tar
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
 
       - name: Deploy to EC2
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
         run: |
-          set -e  # Exit on error
-
-          echo "Saving SSH private key..."
+          # Save the SSH key to a file
           echo "${SSH_PRIVATE_KEY}" > private_key.pem
           chmod 600 private_key.pem
 
-          echo "Testing SSH connection..."
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "echo Connection successful"
+          # Create .env file
+          echo "POSTGRES_DB=${POSTGRES_DB}" > .env
+          echo "POSTGRES_USER=${POSTGRES_USER}" >> .env
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
+          echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
+          echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
 
-          echo "Syncing files to EC2 instance..."
-          rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" . ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend
+          # Transfer files to EC2
+          scp -i private_key.pem .env ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/.env
+          scp -i private_key.pem service-account-file.b64 ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/service-account-file.b64
 
-          echo "Transferring Docker image to EC2..."
-          scp -i private_key.pem -o StrictHostKeyChecking=no myapp.tar ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend
+          # Connect to EC2 instance and deploy
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+            # Pull the latest Docker image
+            docker pull ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
 
-          echo "Running deployment script on EC2 instance..."
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "cd /home/ubuntu/Backend && ./deploy.sh"
+            # Deploy with Docker Compose
+            docker-compose down
+            docker-compose up -d
 
-          echo "Cleaning up the private key file..."
-          rm private_key.pem
+            # Clean up the SSH key file
+            rm private_key.pem
+          EOF
