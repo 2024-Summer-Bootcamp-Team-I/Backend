@@ -14,7 +14,7 @@ from .timeline import get_similar_news_ids
 
 
 class news_APIView(APIView):
-    @swagger_auto_schema(operation_summary="뉴스기사 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
+    @swagger_auto_schema(operation_summary="뉴진스기사 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
     def post(self, request):
         serializer = news_data_Serializer(data=request.data)
         if serializer.is_valid():
