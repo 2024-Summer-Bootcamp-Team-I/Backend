@@ -11,7 +11,9 @@ from datetime import datetime, timedelta
 from django.db.models.functions import RowNumber
 from django.db.models import Window, F
 from .timeline import get_similar_news_ids
-
+from channels.models import Channel
+from django.shortcuts import get_object_or_404
+from .sentiment import analyze_sentiment, recommend_similar_articles
 
 class news_APIView(APIView):
     @swagger_auto_schema(operation_summary="뉴진스기사 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
@@ -87,6 +89,76 @@ class NewsTimelineAPIView(APIView):
 
         serializer = similar_news_Serializer(similar_news, many = True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class AAPIView(APIView):
+    @swagger_auto_schema(
+        operation_summary="A",
+        responses={200: news_data_Serializer()},
+    )
+    def get(self, request, news_id):
+        try:
+            classify = get_object_or_404(News, news_id=news_id)
+            news = classify.news_id
+            target_article = classify.content
+
+            target_score, target_magnitude = analyze_sentiment(target_article)
+            articles = list(News.objects.all())
+
+            # Ensure that `news` is in `articles`
+            try:
+                article_index = next(i for i, article in enumerate(articles) if article.news_id == news_id)
+            except ValueError:
+                return Response({"detail": "Article not found in the database."}, status=status.HTTP_404_NOT_FOUND)
+            
+            recommendations = recommend_similar_articles(article_index, articles)
+            
+            similar_articles = []
+            opposite_articles = []
+            
+            for similar_news, score in recommendations:
+                similar_score, similar_magnitude = analyze_sentiment(similar_news.content)
+                channel = get_object_or_404(Channel, id=similar_news.channel_id)
+                channel_name = channel.name
+                
+                article_data = {
+                    "news_id": similar_news.news_id,
+                    "channel": channel_name,
+                    "title": similar_news.title,
+                    "url": similar_news.url,
+                    "similarity": score,
+                    "sentiment_score": similar_score,
+                    "sentiment_magnitude": similar_magnitude
+                }
+                
+                if score > 0.1:
+                    if (target_score < 0 and similar_score > 0) or (target_score > 0 and similar_score < 0):
+                        opposite_articles.append(article_data)
+                    similar_articles.append(article_data)
+            
+            channel = get_object_or_404(Channel, id=classify.channel_id)
+            channel_name = channel.name
+            
+            response_data = {
+                "target_article": {
+                    "title": classify.title,
+                    "content": classify.content,
+                    "channel": channel_name,
+                    "img": classify.img,
+                    "url": classify.url,
+                    "summarize": classify.summarize,
+                    "published_date": classify.published_date,
+                    "sentiment_score": target_score,
+                    "sentiment_magnitude": target_magnitude
+                },
+                "similar_articles": similar_articles,
+                "opposite_articles": opposite_articles   
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            # Log the exception if needed
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -100,5 +172,5 @@ def crawl_all_news_job():
         print(f"크롤링 중 오류 발생: {e}")
         
 scheduler = BackgroundScheduler()
-scheduler.add_job(crawl_all_news_job, 'interval', hours=2) 
+scheduler.add_job(crawl_all_news_job, 'interval', minutes=1) 
 scheduler.start()

@@ -23,10 +23,6 @@ ALLOWED_HOSTS = ['*'] # 모든 IP를 허용
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'staticfiles/dist')
-]
-
 
 INSTALLED_APPS = [
     "django.contrib.admin",
