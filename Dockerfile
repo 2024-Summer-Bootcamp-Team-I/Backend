@@ -17,11 +17,5 @@ RUN pip install -r requirements.txt
 # 소스 코드 복사
 COPY . .
 
-# Google Cloud 서비스 계정 JSON 파일 추가
-ADD service-account-file.json /path/to/service-account-file.json
-
-# 환경 변수 설정
-ENV GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-file.json
-
 # Gunicorn을 사용하여 Django 애플리케이션 실행
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "djangoIteam.wsgi:application"]
