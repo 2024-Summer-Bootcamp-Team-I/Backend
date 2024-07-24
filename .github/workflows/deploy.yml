@@ -1,7 +1,7 @@
 name: Deploy to EC2
 
 on:
-  pull_request:
+  push:
     branches:
       - develop
 
@@ -39,8 +39,8 @@ jobs:
           echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
 
           # Transfer files to EC2
-          scp -i private_key.pem .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
-          scp -i private_key.pem deploy.sh ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
+          scp -i private_key.pem -o StrictHostKeyChecking=no .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
+          scp -i private_key.pem -o StrictHostKeyChecking=no deploy.sh ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
 
           # Connect to EC2 instance and run deployment script
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
