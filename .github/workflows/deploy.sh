@@ -1,13 +1,20 @@
 #!/bin/bash
 
-# Navigate to the deployment directory
+set -e  # Exit on error
+
+echo "Navigating to the deployment directory..."
 cd /home/ubuntu/Backend || exit
 
-# Pull latest changes from Git
+echo "Pulling latest changes from Git..."
 git pull origin main
 
-# Load Docker image and run container
-docker load -i myapp.tar
-docker stop myapp-container || true
-docker rm myapp-container || true
-docker run -d --name myapp-container -p 80:80 myapp:latest
+echo "Pulling the latest Docker image..."
+docker-compose pull
+
+echo "Stopping and removing existing Docker containers..."
+docker-compose down
+
+echo "Starting new Docker containers..."
+docker-compose up -d
+
+echo "Deployment complete!"

@@ -1,0 +1,67 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
+
+      - name: Deploy to EC2
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          SERVICE_ACCOUNT_FILE: ${{ secrets.SERVICE_ACCOUNT_FILE }}
+        run: |
+          # Save the SSH key to a file
+          echo "${SSH_PRIVATE_KEY}" > private_key.pem
+          chmod 600 private_key.pem
+
+          # Create .env file
+          echo "POSTGRES_DB=${POSTGRES_DB}" > .env
+          echo "POSTGRES_USER=${POSTGRES_USER}" >> .env
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
+          echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
+          echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
+
+          # Save the service account file
+          echo "${SERVICE_ACCOUNT_FILE}" > service-account-file.json
+          chmod 600 service-account-file.json
+
+          # Transfer files to EC2
+          scp -i private_key.pem .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
+
+          # Connect to EC2 instance and deploy
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+            # Pull the latest Docker image
+            docker pull ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
+
+            # Deploy with Docker Compose
+            docker-compose down
+            docker-compose up -d
+
+            # Clean up
+            rm /home/ubuntu/Backend/private_key.pem
+            rm /home/ubuntu/Backend/.env
+            rm /home/ubuntu/Backend/service-account-file.json
+          EOF
