@@ -13,21 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install dependencies
+      - name: Build Docker image
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Decode service account file
-        env:
-          SERVICE_ACCOUNT_FILE: ${{ secrets.SERVICE_ACCOUNT_FILE }}
-        run: |
-          echo "${SERVICE_ACCOUNT_FILE}" | base64 --decode > /path/to/service-account-file.json
+          echo "Building Docker image..."
+          docker build -t myapp:latest .
+          docker save myapp:latest -o myapp.tar
 
       - name: Deploy to EC2
         env:
@@ -35,15 +25,23 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          # Save the SSH key to a file
+          set -e  # Exit on error
+
+          echo "Saving SSH private key..."
           echo "${SSH_PRIVATE_KEY}" > private_key.pem
           chmod 600 private_key.pem
 
-          # Sync files to EC2 instance
+          echo "Testing SSH connection..."
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "echo Connection successful"
+
+          echo "Syncing files to EC2 instance..."
           rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" . ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend
 
-          # Run deployment script on EC2 instance
+          echo "Transferring Docker image to EC2..."
+          scp -i private_key.pem -o StrictHostKeyChecking=no myapp.tar ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend
+
+          echo "Running deployment script on EC2 instance..."
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "cd /home/ubuntu/Backend && ./deploy.sh"
 
-          # Clean up the private key file
+          echo "Cleaning up the private key file..."
           rm private_key.pem
