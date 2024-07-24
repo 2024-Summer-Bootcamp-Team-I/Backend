@@ -22,5 +22,18 @@ class ClassifyNewsUpdateSerializer(serializers.ModelSerializer):
         model = ClassifyNews
         fields = ("score", "reason")
 
+class SNUCrawlingSerializer(serializers.ModelSerializer):
+    url = serializers.URLField()
+    snu_num = serializers.IntegerField()
+    class Meta:
+        model = ClassifyNews
+        fields = ['url', 'snu_num']
+
+class SNUClassifySerializer(serializers.ModelSerializer):
+    url = serializers.URLField()
+    class Meta:
+        model = ClassifyNews
+        fields = ['url']
+
 class PageParameterSerializer(serializers.Serializer):
     page = serializers.IntegerField()
