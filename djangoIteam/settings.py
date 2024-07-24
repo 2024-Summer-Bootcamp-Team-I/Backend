@@ -90,11 +90,11 @@ WSGI_APPLICATION = "djangoIteam.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('postgres'),
-        'USER': os.environ.get('postgres'),
-        'PASSWORD': os.environ.get('4414'),
-        'HOST': os.environ.get('db'),
-        'PORT': os.environ.get('5432'),
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '4414',
+        'HOST': 'db',
+        'PORT': '5432',
     }
 }
 
