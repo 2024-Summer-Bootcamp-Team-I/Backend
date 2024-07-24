@@ -5,8 +5,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import ClassifyNews
 from news.models import News
-from .serializers import ClassifyNewsSerializer, ClassifyNewsCreateSerializer, ClassifyNewsUpdateSerializer, PageParameterSerializer
+from .serializers import ClassifyNewsSerializer, ClassifyNewsCreateSerializer, ClassifyNewsUpdateSerializer, PageParameterSerializer, SNUCrawlingSerializer, SNUClassifySerializer
 from drf_yasg.utils import swagger_auto_schema
+from channels.models import Channel
+from .snu_save_c_news import crawl_news
+from .snu_crawl import snu_crawl
+from .snu_embedding import snu_embedding
+from .snu_classify_c_news import c_news_classify
 
 class ClassifiesAPIView(APIView):
     @swagger_auto_schema(
@@ -65,3 +70,54 @@ class ClassifyCAPIView(APIView):
             serializer.save()
             return Response({"message":"기사 판별이 업데이트 되었습니다."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class SNUEmbeddingAPIView(APIView):
+    @swagger_auto_schema(
+        operation_summary="SNU 뉴스 저장 및 검증정보 크롤링(C type)",
+        request_body=SNUCrawlingSerializer,
+    )
+    def post(self, request):
+        serializer = SNUCrawlingSerializer(data = request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        url = request.data.get('url')
+        snu_num = request.data.get('snu_num')
+        try:
+            crawl_news(url)
+            snu_crawl(snu_num)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"아마": "잘 됐을걸 확인해봐. c-type 뉴스랑 검증정보 txt"}, status=status.HTTP_201_CREATED)
+    
+    @swagger_auto_schema(
+        operation_summary="SNU 검증정보 임베딩",
+    )
+    def get(self, request):
+        try:
+            snu_embedding()
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"이거도": "잘 됐을걸 확인해봐. 오픈서치 저장값"}, status=status.HTTP_200_OK)
+
+class SNUClassifyAPIView(APIView):
+    @swagger_auto_schema(
+        operation_summary="SNU 뉴스 판별 및 저장",
+        request_body=SNUClassifySerializer,
+    )
+    def post(self, request):
+        serializer = SNUClassifySerializer(data = request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        url = request.data.get('url')
+        news = News.objects.get(url = url)
+        news_id = news.news_id
+        try:
+            c_news_classify(news_id)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return  Response({"진짜" : "잘 됐을걸 확인해봐. 판별뉴스 테이블"}, status=status.HTTP_201_CREATED)
+
+
+
+
