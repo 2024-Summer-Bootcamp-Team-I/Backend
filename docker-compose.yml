@@ -48,8 +48,6 @@ services:
       - POSTGRES_PASSWORD=4414
     networks:
       - backend-network
-    env_file:
-      - .env
 
   backend:
     container_name: backend
@@ -63,8 +61,12 @@ services:
     volumes:
       - .:/Backend
       - ./service-account-file.b64:/Backend/service-account-file.b64
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=4414
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
     depends_on:
       - db
     networks:
