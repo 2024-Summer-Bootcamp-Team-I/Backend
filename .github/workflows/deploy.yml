@@ -54,7 +54,7 @@ jobs:
           # Connect to EC2 instance and deploy
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
             # Pull the latest Docker image
-            docker pull ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
+            docker pull dlaehddus18/fake_news:latest
 
             # Deploy with Docker Compose
             docker-compose down
