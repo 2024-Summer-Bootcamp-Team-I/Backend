@@ -48,7 +48,4 @@ jobs:
 
             # Run the deployment script
             /home/ubuntu/Backend/deploy.sh
-
-            # Clean up
-            rm private_key.pem
           EOF
