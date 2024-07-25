@@ -177,3 +177,4 @@ staticfiles/admin
 staticfiles/drf-yasg
 staticfiles/rest_framework
 
+dist
