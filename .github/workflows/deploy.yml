@@ -1,7 +1,7 @@
 name: Deploy to EC2
 
 on:
-  push:
+  pull_request:
     branches:
       - develop
 
@@ -10,16 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
-
       - name: Deploy to EC2
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -36,6 +26,10 @@ jobs:
           # Save the SSH key to a file
           echo "${SSH_PRIVATE_KEY}" > private_key.pem
           chmod 600 private_key.pem
+          
+          # Save the service account file to a file
+          echo "${SERVICE_ACCOUNT_FILE}" > service-account-file.json
+          chmod 600 service-account-file.json
 
           # Create .env file
           echo "POSTGRES_DB=${POSTGRES_DB}" > .env
@@ -44,24 +38,14 @@ jobs:
           echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
           echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
 
-          # Save the service account file
-          echo "${SERVICE_ACCOUNT_FILE}" > service-account-file.json
-          chmod 600 service-account-file.json
-
           # Transfer files to EC2
-          scp -i private_key.pem .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
+          scp -i private_key.pem -o StrictHostKeyChecking=no .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
 
-          # Connect to EC2 instance and deploy
+          # Connect to EC2 instance and run deployment script
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
-            # Pull the latest Docker image
-            docker pull ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
+            # Make the script executable
+            chmod +x /home/ubuntu/Backend/deploy.sh
 
-            # Deploy with Docker Compose
-            docker-compose down
-            docker-compose up -d
-
-            # Clean up
-            rm /home/ubuntu/Backend/private_key.pem
-            rm /home/ubuntu/Backend/.env
-            rm /home/ubuntu/Backend/service-account-file.json
+            # Run the deployment script
+            /home/ubuntu/Backend/deploy.sh
           EOF

@@ -104,6 +104,7 @@ soupsieve==2.5
 SQLAlchemy==2.0.25
 sqlparse==0.5.1
 sympy==1.13.0
+selenium==4.11.2
 tenacity==8.2.3
 tiktoken==0.5.2
 tokenizers==0.19.1
