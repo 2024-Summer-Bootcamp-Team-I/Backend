@@ -14,7 +14,7 @@ load_dotenv(dotenv_path=env_path)
 SECRET_KEY = "django-insecure-xao+6qmvs4&9zd)4n*s4bkdov^4k!78$+6@23j8_4g1rj%h-6w"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*'] # 모든 IP를 허용
 

@@ -5,9 +5,7 @@ from rest_framework.response import Response
 from .serializers import UserIdParameterSerializer, ScrapedNewsCreateSerializer, ScrapedNewsSerializer
 from .models import ScrapedNews
 from accounts.models import User
-from .models import ScrapedNews
 from news.models import News
-from classify_news.models import ClassifyNews
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -24,34 +22,33 @@ class ScrapsAPIView(APIView):
         scraps = ScrapedNews.objects.filter(user_id = user, is_deleted = False)
         serializer = ScrapedNewsSerializer(scraps, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+        
     @swagger_auto_schema(
         operation_summary="뉴스 스크랩",
         query_serializer=UserIdParameterSerializer,
         request_body=ScrapedNewsCreateSerializer,
-        responses={201: ScrapedNewsCreateSerializer()},
+        responses={201: ScrapedNewsSerializer(), 400: 'Bad Request'}
     )
     def post(self, request):
-        user_id = request.query_params.get('user_id')
-        user = get_object_or_404(User, pk = user_id)
+        # 시리얼라이저로 쿼리 파라미터 검증
+        query_serializer = UserIdParameterSerializer(data=request.query_params)
+        if not query_serializer.is_valid():
+            return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        user_id = query_serializer.validated_data.get('user_id')
+        user = get_object_or_404(User, pk=user_id)
         url = request.data.get('url')
 
-        news = News.objects.filter(url=url).first()
-        if not news:
-            return Response({"detail": "url에 해당하는 뉴스가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        # 뉴스 존재 여부 확인
+        news = get_object_or_404(News, url=url)
         
-        scraped_news = ScrapedNews.objects.filter(news_id=news, is_deleted=True).first()
-        if scraped_news:
-            scraped_news.is_deleted = False
-            serializer = ScrapedNewsSerializer(scraped_news, data={'is_deleted': False}, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        serializer = ScrapedNewsCreateSerializer(data = request.data)
+        # 데이터 유효성 검사 및 생성
+        serializer = ScrapedNewsCreateSerializer(data=request.data)
         if serializer.is_valid():
             scraped_news = ScrapedNews.objects.create(user_id=user, news_id=news)
-            serializer = ScrapedNewsSerializer(scraped_news)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            response_serializer = ScrapedNewsSerializer(scraped_news)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         
