@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from .models import News
+from scraped_news.models import ScrapedNews
 from .serializers import news_data_Serializer, correctrespones_Serializer, news_count_Serializer, similar_news_Serializer, news_url_Serializer
 from .crowling import crawl_all_news, crawl_news
 from apscheduler.schedulers.background import BackgroundScheduler
-from django.db.models import Count
+from django.db.models import Count, Subquery
 from datetime import datetime, timedelta
 from django.db.models.functions import RowNumber
 from django.db.models import Window, F
@@ -58,11 +59,37 @@ class CrawlNewsView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class CountNewsAPIView(APIView):
-    @swagger_auto_schema(operation_summary="뉴스기사 개수 조회", responses= {200:news_count_Serializer})
+class CountCrawlNewsAPIView(APIView):
+    @swagger_auto_schema(operation_summary="일자별 크롤링 뉴스 개수 조회", responses= {200:news_count_Serializer})
     def get (self, request):
         counts = News.objects.values('created_at').annotate(news_count = Count('news_id')).order_by('-created_at')[:8]
         serializer = news_count_Serializer(counts, many = True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class CountClassifyNewsAPIView(APIView):
+    @swagger_auto_schema(operation_summary="일자별 판별뉴스(C-type) + 스크랩 개수 조회", responses= {200:news_count_Serializer})
+    def get (self, request):
+        scrap_counts = ScrapedNews.objects.filter(is_deleted=False).values('created_at').annotate(scrap_count = Count('id')).order_by('-created_at')[:8]
+        c_counts = News.objects.filter(type = 'c').values('created_at').annotate(c_count = Count('news_id')).order_by('-created_at')[:8]
+        
+        scrap_counts_list = list(scrap_counts)
+        c_counts_list = list(c_counts)
+
+        combined_counts = {}
+
+        for item in scrap_counts_list:
+            date = item['created_at']
+            combined_counts[date] = combined_counts.get(date, 0) + item['scrap_count']
+
+        for item in c_counts_list:
+            date = item['created_at']
+            combined_counts[date] = combined_counts.get(date, 0) + item['c_count']
+
+        combined_counts_list = [{'created_at': date, 'news_count': count} for date, count in combined_counts.items()]
+                
+        serializer = news_count_Serializer(combined_counts_list, many = True)
+
+
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
@@ -172,5 +199,5 @@ def crawl_all_news_job():
         print(f"크롤링 중 오류 발생: {e}")
         
 scheduler = BackgroundScheduler()
-scheduler.add_job(crawl_all_news_job, 'interval', minutes=1) 
+scheduler.add_job(crawl_all_news_job, 'interval', hours=1) 
 scheduler.start()

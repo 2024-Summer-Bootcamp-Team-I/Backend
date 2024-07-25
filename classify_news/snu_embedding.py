@@ -7,6 +7,7 @@ from langchain_community.document_loaders import DirectoryLoader
 import torch
 from transformers import AutoTokenizer, AutoModel
 import nltk
+from .snu_crawl import init_news_content_text
 
 
 
@@ -135,6 +136,7 @@ def snu_embedding():
         timeout=360000
     )
 
+    init_news_content_text()
 
 
     # vector DB 초기화
