@@ -9,7 +9,7 @@ echo "Git에서 최신 변경 사항을 가져오기"
 git pull origin develop || { echo "Failed to pull from Git"; exit 1; }
 
 echo "Docker 이미지를 가져오기"
-docker-compose pull dlaehddus18/fake_news:latest|| { echo "Failed to pull Docker images"; exit 1; }
+docker-compose pull dlaehddus18/fake_news:v1|| { echo "Failed to pull Docker images"; exit 1; }
 
 echo "이전 도커 내리기"
 docker-compose down || { echo "Failed to bring down Docker containers"; exit 1; }

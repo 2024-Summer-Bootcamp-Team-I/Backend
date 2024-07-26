@@ -1,7 +1,7 @@
 name: CI Pipeline
 
 on:
-  pull_request:
+  push:
     branches:
       - develop
 
@@ -27,8 +27,8 @@ jobs:
           SERVICE_ACCOUNT_FILE: ${{ secrets.SERVICE_ACCOUNT_FILE }}
         run: |
           echo "${SERVICE_ACCOUNT_FILE}" > service-account-file.json
-          docker build -t ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest .
+          docker build -t ${{ secrets.DOCKER_REGISTRY }}/fake_news:v1 .
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_REGISTRY }}/fake_news:latest
+          docker push ${{ secrets.DOCKER_REGISTRY }}/fake_news:v1
