@@ -25,3 +25,4 @@ echo "컨테이너 상태 확인"
 docker ps || { echo "Failed to list running Docker containers"; exit 1; }
 
 echo "배포완료~~"
+echo "git hub꺼 가져오는지 확인문구"
