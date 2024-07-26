@@ -20,6 +20,7 @@ urlpatterns = [
     path("api/v1/classifies/<int:news_id>/feedbacks/", include('feedbacks.urls')),                             
     path("api/v1/classifies/", include('classify_news.urls')),
     path("api/v1/scraps/", include('scraped_news.urls')),
+    path('', include('django_prometheus.urls')),
 
 ]
 urlpatterns += [

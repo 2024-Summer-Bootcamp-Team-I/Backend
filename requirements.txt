@@ -128,3 +128,4 @@ opensearch-py
 openai
 unstructured
 python-magic
+django-prometheus

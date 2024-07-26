@@ -41,10 +41,13 @@ INSTALLED_APPS = [
     'scraped_news',
     'django_apscheduler',
     'corsheaders',
+    'django_prometheus',
 
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
