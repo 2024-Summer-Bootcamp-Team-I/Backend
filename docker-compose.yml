@@ -28,6 +28,7 @@ services:
       - backend-network
 
   backend:
+    image: fake_news:latest
     container_name: backend
     build: ./
     command: >
