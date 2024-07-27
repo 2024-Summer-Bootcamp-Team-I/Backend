@@ -37,3 +37,4 @@ class SNUClassifySerializer(serializers.ModelSerializer):
 
 class PageParameterSerializer(serializers.Serializer):
     page = serializers.IntegerField()
+    keyword = serializers.CharField(required=False, allow_blank=True)
