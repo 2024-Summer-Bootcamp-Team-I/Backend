@@ -20,3 +20,11 @@ class ScrapedNewsCreateSerializer(serializers.ModelSerializer):
 
 class UserIdParameterSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
+
+class KeywordSearchSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    keyword = serializers.CharField()
+    
+    class Meta:
+        model = ScrapedNews
+        fields = ['id', 'title', 'channel', 'created_at']
