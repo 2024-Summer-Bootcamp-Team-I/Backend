@@ -117,7 +117,3 @@ class SNUClassifyAPIView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return  Response({"진짜" : "잘 됐을걸 확인해봐. 판별뉴스 테이블"}, status=status.HTTP_201_CREATED)
-
-
-
-
