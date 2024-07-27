@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from rest_framework import status
@@ -20,18 +21,30 @@ class ClassifiesAPIView(APIView):
         responses={200: ClassifyNewsSerializer()},
     )
     def get(self, request):
-        page = request.query_params.get('page')
-        if page is None:
-            page = 1
-        classifies = ClassifyNews.objects.all()
-        paginator = Paginator(classifies, 9)
-        page_obj = paginator.get_page(page)
-        serializer = ClassifyNewsSerializer(page_obj, many=True)
-        response_data = {
-            'total_pages': paginator.num_pages,
-            'results': serializer.data
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+        page = request.query_params.get('page', 1)
+        keyword = request.query_params.get('keyword', '')
+
+        try:
+            if keyword:
+                classifies = ClassifyNews.objects.filter(
+                    Q(news_id__title__icontains=keyword) |
+                    Q(news_id__channel__name__icontains=keyword)
+                ).order_by('news_id')
+            else:
+                classifies = ClassifyNews.objects.all().order_by('news_id')
+
+            paginator = Paginator(classifies, 9)
+            page_obj = paginator.get_page(page)
+            serializer = ClassifyNewsSerializer(page_obj, many=True)
+            response_data = {
+                'total_pages': paginator.num_pages,
+                'results': serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    
     @swagger_auto_schema(
         operation_summary="뉴스 판별",
         request_body=ClassifyNewsCreateSerializer,
