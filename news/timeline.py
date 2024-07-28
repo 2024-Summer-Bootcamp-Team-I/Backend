@@ -1,18 +1,31 @@
 from opensearchpy import OpenSearch
 from sklearn.metrics.pairwise import cosine_similarity
 import torch
+import dotenv
+import os
 
 
+dotenv.load_dotenv()
+
+# 환경 변수에서 값 가져오기
+opensearch_id = os.environ.get("OPENSEARCH_ID")
+opensearch_password = os.environ.get("OPENSEARCH_PASSWORD")
+opensearch_url = os.environ.get("OPENSEARCH_URL")
+
+# 인증 정보 설정
+opensearch_auth = (opensearch_id, opensearch_password)
+
+index_name = 'duck'
+
+# OpenSearch 클라이언트를 초기화
 client = OpenSearch(
-    hosts=[{"host": "host.docker.internal", "port": 9200}],
-    http_auth=("admin", "A769778aa!"),
+    hosts=[opensearch_url],
+    http_auth=opensearch_auth,
     use_ssl=True,
     verify_certs=False,
     ssl_assert_hostname=False,
-    ssl_show_warn=False,
+    ssl_show_warn=False
 )
-
-index_name = 'duck'
 
 
 def calc_similarity(vector1, vector2):

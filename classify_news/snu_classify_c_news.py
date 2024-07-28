@@ -25,14 +25,33 @@ def c_news_classify(news_id):
     )
     # LLMChain 설정
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
-    client = OpenSearch(
-        hosts=[{"host": "localhost", "port": 9200}],
-        http_auth=("admin", "A769778aa!"),
+
+    dotenv.load_dotenv()
+
+    # 환경 변수에서 값 가져오기
+    opensearch_id = os.environ.get("OPENSEARCH_ID")
+    opensearch_password = os.environ.get("OPENSEARCH_PASSWORD")
+    opensearch_url = os.environ.get("OPENSEARCH_URL")
+
+    # 인증 정보 설정
+    opensearch_auth = (opensearch_id, opensearch_password)
+
+    # 인증 정보가 올바르게 설정되었는지 확인
+    if None in opensearch_auth or None in (opensearch_id, opensearch_password, opensearch_url):
+        raise ValueError("OpenSearch 인증 정보가 설정되지 않았습니다.")
+
+    index_name = 'duck'
+
+    # OpenSearch 클라이언트를 초기화
+    opensearch_client = OpenSearch(
+        hosts=[opensearch_url],
+        http_auth=opensearch_auth,
         use_ssl=True,
         verify_certs=False,
         ssl_assert_hostname=False,
-        ssl_show_warn=False,
+        ssl_show_warn=False
     )
+    
     # 인덱스 이름 설정 (소문자로)
     index_name = 'jihye'
     # 질문을 통해 OpenSearch에서 문서 검색
