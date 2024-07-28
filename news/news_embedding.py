@@ -39,7 +39,8 @@ def news_embedding():
         ssl_show_warn=False
     )
 
-    
+
+
 
     class MyEmbeddingModel:
         def __init__(self, model_name):
