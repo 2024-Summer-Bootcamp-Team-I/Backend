@@ -11,7 +11,9 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=[AllowAny],
+    urlconf='‘https://fakenew.site/’',
 )
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/accounts/",include('accounts.urls')),
