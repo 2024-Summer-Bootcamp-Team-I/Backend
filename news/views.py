@@ -25,7 +25,7 @@ class news_APIView(APIView):
             return Response({"message": "뉴스기사가 저장되었습니다."}, status = status.HTTP_201_CREATED)
         return Response({"message": "입력값이 잘못되었습니다."}, status = status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(operation_summary="뉴스기사 전체조회", responses= {200:"조회완료"})
+    @swagger_auto_schema(operation_summary="뉴스바라시기사 전체조회", responses= {200:"조회완료"})
     def get(self, request):
         news_list = News.objects.all()
         serializer = news_data_Serializer(news_list, many=True)
