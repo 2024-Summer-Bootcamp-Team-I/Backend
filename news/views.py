@@ -32,7 +32,7 @@ class news_APIView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
 
 class news_list_APIView(APIView):
-    @swagger_auto_schema(operation_summary="뉴스기사 개별조회",responses={200:correctrespones_Serializer, 404:"Not Found"})
+    @swagger_auto_schema(operation_summary="뉴스스기사 개별조회",responses={200:correctrespones_Serializer, 404:"Not Found"})
     def get(self, request, pk):
         try:
             news = News.objects.get(pk=pk)
