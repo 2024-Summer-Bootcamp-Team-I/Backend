@@ -41,10 +41,10 @@ jobs:
           echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
           echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
           echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
-          echo "OPENAI_API_KEY=${OPENAI_API_KEY }" >> .env
-          echo "OPENSEARCH_ID=${OPENSEARCH_ID }" >> .env
-          echo "OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD }" >> .env
-          echo "OPENSEARCH_URL=${OPENSEARCH_URL }" >> .env
+          echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> .env
+          echo "OPENSEARCH_ID=${OPENSEARCH_ID}" >> .env
+          echo "OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD}" >> .env
+          echo "OPENSEARCH_URL=${OPENSEARCH_URL}" >> .env
 
           # Transfer files to EC2
           scp -i private_key.pem -o StrictHostKeyChecking=no .env service-account-file.json ${EC2_USER}@${EC2_HOST}:/home/ubuntu/Backend/
