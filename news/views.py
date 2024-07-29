@@ -191,7 +191,7 @@ class AAPIView(APIView):
 
 
 def crawl_all_news_job():
-    url = 'https://news.naver.com/section/105'
+    url ='https://news.naver.com/section/102'
     try:
         crawl_all_news(url)
         print("크롤링 작업 완료")
