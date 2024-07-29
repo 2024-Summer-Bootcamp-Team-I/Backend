@@ -20,7 +20,7 @@ class ScrapsAPIView(APIView):
     def get(self, request):
         user_id = request.query_params.get('user_id')
         user = get_object_or_404(User, pk=user_id)
-        scraps = ScrapedNews.objects.filter(user_id=user, is_deleted=False)
+        scraps = ScrapedNews.objects.filter(user_id = user, is_deleted = False).order_by('-id')
         serializer = ScrapedNewsSerializer(scraps, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

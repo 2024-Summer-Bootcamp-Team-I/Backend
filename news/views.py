@@ -17,7 +17,7 @@ from django.shortcuts import get_object_or_404
 from .sentiment import analyze_sentiment, recommend_similar_articles
 
 class news_APIView(APIView):
-    @swagger_auto_schema(operation_summary="뉴스인가요 뉴스입니다 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
+    @swagger_auto_schema(operation_summary="뉴스 저장", request_body= news_data_Serializer, responses= {201:correctrespones_Serializer, 400:"입력정보 오류"})
     def post(self, request):
         serializer = news_data_Serializer(data=request.data)
         if serializer.is_valid():
@@ -191,7 +191,7 @@ class AAPIView(APIView):
 
 
 def crawl_all_news_job():
-    url = 'https://news.naver.com/section/105'
+    url ='https://news.naver.com/section/102'
     try:
         crawl_all_news(url)
         print("크롤링 작업 완료")
