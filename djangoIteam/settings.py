@@ -59,7 +59,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'chrome-extension://poaeocjkealnljdldemcdgolkcbifldl',
+    "https://n.news.naver.com",
+]
+
+CORS_ALLOW_ALL_ORIGINS: True
 
 ROOT_URLCONF = "djangoIteam.urls"
 
