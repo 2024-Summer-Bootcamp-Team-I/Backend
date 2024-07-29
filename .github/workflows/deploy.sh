@@ -17,6 +17,12 @@ docker-compose down || { echo "Failed to bring down Docker containers"; exit 1; 
 echo "DB 권한, 소유권 변경"
 sudo chmod -R 755 /home/ubuntu/Backend/data/db || { echo "Failed to change permissions"; exit 1; }
 sudo chown -R ubuntu:ubuntu /home/ubuntu/Backend/data/db || { echo "Failed to change ownership"; exit 1; }
+sudo chmod 755 /etc/letsencrypt /etc/letsencrypt/archive /etc/letsencrypt/live
+sudo chown root:root /etc/letsencrypt /etc/letsencrypt/archive /etc/letsencrypt/live
+sudo chmod 644 /etc/letsencrypt/archive/fakenew.site/*.pem
+sudo chmod 600 /etc/letsencrypt/archive/fakenew.site/privkey1.pem
+sudo chown root:root /etc/letsencrypt/archive/fakenew.site/*.pem
+
 
 echo "가져온 이미지 도커에 올리기"
 docker-compose up -d || { echo "Failed to bring up Docker containers"; exit 1; }
