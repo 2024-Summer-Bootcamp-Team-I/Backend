@@ -20,12 +20,16 @@ sudo chown -R ubuntu:ubuntu /home/ubuntu/Backend/data/db || { echo "Failed to ch
 sudo chmod 755 /etc/letsencrypt /etc/letsencrypt/archive /etc/letsencrypt/live
 sudo chown root:root /etc/letsencrypt /etc/letsencrypt/archive /etc/letsencrypt/live
 sudo chmod 644 /etc/letsencrypt/archive/fakenew.site/*.pem
-sudo chmod 600 /etc/letsencrypt/archive/fakenew.site/privkey1.pem
 sudo chown root:root /etc/letsencrypt/archive/fakenew.site/*.pem
+sudo chmod 644 /etc/letsencrypt/archive/fakenew.site/*.pem
+sudo chown root:root /etc/letsencrypt/archive/fakenew.site/*.pem
+
 
 
 echo "가져온 이미지 도커에 올리기"
 docker-compose up -d || { echo "Failed to bring up Docker containers"; exit 1; }
+
+sudo tail -f /var/log/nginx/error.log
 
 echo "컨테이너 상태 확인"
 docker ps || { echo "Failed to list running Docker containers"; exit 1; }
